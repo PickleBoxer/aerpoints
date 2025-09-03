@@ -58,6 +58,40 @@
 </div>
 
 <div class="panel">
+	<h3><i class="icon icon-edit"></i> {l s='Product Points Management' mod='aerpoints'}</h3>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h4 class="panel-title">{l s='Individual Product Setup' mod='aerpoints'}</h4>
+				</div>
+				<div class="panel-body">
+					<p>{l s='Configure points for individual products directly in the product edit page.' mod='aerpoints'}</p>
+					<a href="{$link->getAdminLink('AdminProducts')|escape:'html':'UTF-8'}" class="btn btn-primary">
+						<i class="icon-shopping-cart"></i>
+						{l s='Manage Products' mod='aerpoints'}
+					</a>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h4 class="panel-title">{l s='Bulk Points Management' mod='aerpoints'}</h4>
+				</div>
+				<div class="panel-body">
+					<p>{l s='View and edit all products with points configuration in one place.' mod='aerpoints'}</p>
+					<a href="{$link->getAdminLink('AdminAerpointsProduct')|escape:'html':'UTF-8'}" class="btn btn-success">
+						<i class="icon-star"></i>
+						{l s='Manage Product Points' mod='aerpoints'}
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="panel">
 	<h3><i class="icon icon-cogs"></i> {l s='Quick Setup Guide' mod='aerpoints'}</h3>
 	<div class="row">
 		<div class="col-md-4">

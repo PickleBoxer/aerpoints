@@ -72,7 +72,10 @@ class Aerpoints extends Module
             $this->registerHook('actionOrderStatusPostUpdate') &&
             $this->registerHook('displayProductButtons') &&
             $this->registerHook('displayShoppingCartFooter') &&
-            $this->registerHook('displayCustomerAccount');
+            $this->registerHook('displayCustomerAccount') &&
+            $this->registerHook('displayAdminProductsExtra') &&
+            $this->registerHook('actionProductUpdate') &&
+            $this->installTab();
     }
 
     public function uninstall()
@@ -84,7 +87,7 @@ class Aerpoints extends Module
 
         include(dirname(__FILE__).'/sql/uninstall.php');
 
-        return parent::uninstall();
+        return parent::uninstall() && $this->uninstallTab();
     }
 
     /**
@@ -99,7 +102,12 @@ class Aerpoints extends Module
             $this->postProcess();
         }
 
-        $this->context->smarty->assign('module_dir', $this->_path);
+        $this->context->smarty->assign(
+			array(
+				'link' => $this->context->link,
+				'module_dir' => $this->_path
+			)
+		);
 
         $output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');
 
@@ -409,5 +417,87 @@ class Aerpoints extends Module
         }
 
         return $this->display(__FILE__, 'views/templates/hook/customer_account.tpl');
+    }
+
+    /**
+     * Hook: displayAdminProductsExtra
+     * Add points configuration fields to product edit page
+     */
+    public function hookDisplayAdminProductsExtra($params)
+    {
+        if (!Configuration::get('AERPOINTS_ENABLED')) {
+            return;
+        }
+
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
+
+        $id_product = (int)Tools::getValue('id_product');
+        $product_points = null;
+        
+        if ($id_product > 0) {
+            $product_points = AerpointsProduct::getProductPoints($id_product);
+        }
+
+        $this->context->smarty->assign(array(
+            'product_points' => $product_points,
+            'id_product' => $id_product,
+        ));
+
+        return $this->display(__FILE__, 'views/templates/admin/product_points.tpl');
+    }
+
+    /**
+     * Hook: actionProductUpdate
+     * Save points configuration when product is updated
+     */
+    public function hookActionProductUpdate($params)
+    {
+        if (!Configuration::get('AERPOINTS_ENABLED')) {
+            return;
+        }
+
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
+
+        $id_product = (int)$params['id_product'];
+        $points_earn = (int)Tools::getValue('aerpoints_earn');
+        $points_buy = (int)Tools::getValue('aerpoints_buy');
+
+        // Only save if at least one point value is set
+        if ($points_earn > 0 || $points_buy > 0) {
+            AerpointsProduct::setProductPoints($id_product, $points_earn, $points_buy);
+        } else {
+            // Remove points configuration if both values are 0
+            AerpointsProduct::deleteProductPoints($id_product);
+        }
+    }
+
+    /**
+     * Install admin tab for product points management
+     */
+    private function installTab()
+    {
+        $tab = new Tab();
+        $tab->active = 1;
+        $tab->class_name = 'AdminAerpointsProduct';
+        $tab->name = array();
+        foreach (Language::getLanguages(true) as $lang) {
+            $tab->name[$lang['id_lang']] = 'AerPoints Products';
+        }
+        $tab->id_parent = (int)Tab::getIdFromClassName('AdminCatalog');
+        $tab->module = $this->name;
+        return $tab->add();
+    }
+
+    /**
+     * Uninstall admin tab
+     */
+    private function uninstallTab()
+    {
+        $id_tab = (int)Tab::getIdFromClassName('AdminAerpointsProduct');
+        if ($id_tab) {
+            $tab = new Tab($id_tab);
+            return $tab->delete();
+        }
+        return true;
     }
 }

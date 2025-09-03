@@ -40,14 +40,18 @@ aerpoints/
 │   ├── AerpointsProduct.php        # Product points configuration
 │   ├── AerpointsPending.php        # Pending points logic
 │   └── AerpointsHistory.php        # Points transaction history
-├── controllers/front/              # Frontend controllers
-│   └── customerpoints.php         # Customer points page controller
+├── controllers/
+│   ├── admin/
+│   │   └── AdminAerpointsController.php # Admin interface for bulk product points management
+│   └── front/
+│       └── customerpoints.php         # Customer points page controller
 ├── sql/                            # Database scripts
 │   ├── install.php                 # Creates database tables
 │   └── uninstall.php              # Removes database tables
 └── views/                          # Templates and assets
     ├── templates/admin/
-    │   └── configure.tpl           # Admin configuration page
+    │   ├── configure.tpl           # Admin configuration page
+    │   └── product_points.tpl      # Product edit page points configuration
     ├── templates/hook/
     │   ├── product_points.tpl      # Product points display
     │   ├── customer_account.tpl    # Customer account link
@@ -70,14 +74,23 @@ After installation, configure the module in Admin Panel > Modules > AerPoints:
 
 ## Product Configuration
 
-For each product that should earn/cost points:
-
+### Option 1: Individual Product Setup (Recommended)
 1. Go to Admin Panel > Catalog > Products
-2. Edit the product
-3. **Note**: Product point configuration will be added via admin interface in future versions
-4. **Current**: Points must be configured via direct database insertion or future admin tools
+2. Edit any product
+3. Scroll down to the **AerPoints Configuration** section
+4. Set **Points Earned**: How many points customers get when buying this product
+5. Set **Points Required to Buy**: How many points needed to purchase with points (0 = cannot buy with points)
+6. Save the product
 
-Example product points configuration:
+### Option 2: Bulk Management
+1. Go to Admin Panel > Modules > AerPoints > Configure
+2. Click **"Manage Product Points"** button
+3. View all products with points configuration
+4. Add new product point configurations
+5. Edit or delete existing configurations in bulk
+
+### Manual Database Configuration (Advanced)
+For direct database access, you can also configure points manually:
 ```sql
 INSERT INTO ps_aerpoints_product (id_product, points_earn, points_buy, date_add, date_upd) 
 VALUES (1, 10, 50, NOW(), NOW());
@@ -112,9 +125,11 @@ VALUES (1, 10, 50, NOW(), NOW());
 ### Hooks Used
 - `actionValidateOrder`: Process points earning/redemption on order
 - `actionOrderStatusPostUpdate`: Complete/cancel pending points
+- `actionProductUpdate`: Save product points configuration from product edit page
 - `displayProductButtons`: Show points info on product pages
 - `displayShoppingCartFooter`: Show redemption options in cart
 - `displayCustomerAccount`: Add "My Points" link to account menu
+- `displayAdminProductsExtra`: Add points configuration section to product edit page
 - `displayBackOfficeHeader`: Load admin CSS/JS
 - `header`: Load frontend CSS/JS
 
