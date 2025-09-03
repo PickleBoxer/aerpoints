@@ -3,9 +3,10 @@
 	<name>aerpoints</name>
 	<displayName><![CDATA[AerPoints]]></displayName>
 	<version><![CDATA[1.0.0]]></version>
-	<description><![CDATA[AerPoints module for Promotion]]></description>
+	<description><![CDATA[Product-based loyalty points system for customer engagement]]></description>
 	<author><![CDATA[AerDigital]]></author>
 	<tab><![CDATA[pricing_promotion]]></tab>
 	<is_configurable>1</is_configurable>
-	<need_instance>1</need_instance>
+	<need_instance>0</need_instance>
+	<limited_countries></limited_countries>
 </module>

@@ -24,25 +24,59 @@
 *}
 
 <div class="panel">
-	<h3><i class="icon icon-credit-card"></i> {l s='AerPoints' mod='aerpoints'}</h3>
+	<h3><i class="icon icon-trophy"></i> {l s='AerPoints - Loyalty Points System' mod='aerpoints'}</h3>
 	<p>
-		<strong>{l s='Here is my new generic module!' mod='aerpoints'}</strong><br />
-		{l s='Thanks to PrestaShop, now I have a great module.' mod='aerpoints'}<br />
-		{l s='I can configure it using the following configuration form.' mod='aerpoints'}
+		<strong>{l s='Welcome to AerPoints!' mod='aerpoints'}</strong><br />
+		{l s='Configure your product-based loyalty points system to encourage customer engagement.' mod='aerpoints'}<br />
+		{l s='Customers earn points on specific products and can redeem them for discounts.' mod='aerpoints'}
 	</p>
 	<br />
-	<p>
-		{l s='This module will boost your sales!' mod='aerpoints'}
-	</p>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="alert alert-info">
+				<h4>{l s='Key Features:' mod='aerpoints'}</h4>
+				<ul>
+					<li>{l s='Product-specific point earning and redemption' mod='aerpoints'}</li>
+					<li>{l s='Configurable point-to-currency conversion' mod='aerpoints'}</li>
+					<li>{l s='Order state management (pending until completion)' mod='aerpoints'}</li>
+					<li>{l s='Complete transaction history' mod='aerpoints'}</li>
+					<li>{l s='Manual point adjustment capabilities' mod='aerpoints'}</li>
+				</ul>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="alert alert-warning">
+				<h4>{l s='Next Steps:' mod='aerpoints'}</h4>
+				<ul>
+					<li>{l s='Configure your global settings below' mod='aerpoints'}</li>
+					<li>{l s='Set points for individual products in the product catalog' mod='aerpoints'}</li>
+					<li>{l s='Monitor customer points and history' mod='aerpoints'}</li>
+				</ul>
+			</div>
+		</div>
+	</div>
 </div>
 
 <div class="panel">
-	<h3><i class="icon icon-tags"></i> {l s='Documentation' mod='aerpoints'}</h3>
-	<p>
-		&raquo; {l s='You can get a PDF documentation to configure this module' mod='aerpoints'} :
-		<ul>
-			<li><a href="#" target="_blank">{l s='English' mod='aerpoints'}</a></li>
-			<li><a href="#" target="_blank">{l s='French' mod='aerpoints'}</a></li>
-		</ul>
-	</p>
+	<h3><i class="icon icon-cogs"></i> {l s='Quick Setup Guide' mod='aerpoints'}</h3>
+	<div class="row">
+		<div class="col-md-4">
+			<div class="alert alert-success text-center">
+				<h4><i class="icon icon-cog"></i> {l s='Step 1' mod='aerpoints'}</h4>
+				<p>{l s='Configure global settings' mod='aerpoints'}</p>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="alert alert-info text-center">
+				<h4><i class="icon icon-shopping-cart"></i> {l s='Step 2' mod='aerpoints'}</h4>
+				<p>{l s='Set points for products' mod='aerpoints'}</p>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="alert alert-warning text-center">
+				<h4><i class="icon icon-users"></i> {l s='Step 3' mod='aerpoints'}</h4>
+				<p>{l s='Monitor customer activity' mod='aerpoints'}</p>
+			</div>
+		</div>
+	</div>
 </div>

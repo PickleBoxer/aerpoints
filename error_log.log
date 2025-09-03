@@ -1,0 +1,24 @@
+[03-Sep-2025 12:12:44 Europe/Rome] PHP Warning:  Use of undefined constant _RIJNDAEL_KEY_ - assumed '_RIJNDAEL_KEY_' (this will throw an Error in a future version of PHP) in /workspace/prestashop16/classes/Cookie.php on line 79
+[03-Sep-2025 12:12:44 Europe/Rome] PHP Stack trace:
+[03-Sep-2025 12:12:44 Europe/Rome] PHP   1. {main}() /workspace/prestashop16/modules/aerpoints/test_module.php:0
+[03-Sep-2025 12:12:44 Europe/Rome] PHP   2. require_once() /workspace/prestashop16/modules/aerpoints/test_module.php:7
+[03-Sep-2025 12:12:44 Europe/Rome] PHP   3. CookieCore->__construct($name = 'ps-s1', $path = '', $expire = 1758622364, $shared_urls = NULL, $standalone = FALSE, $secure = FALSE) /workspace/prestashop16/config/config.inc.php:174
+[03-Sep-2025 12:12:44 Europe/Rome] PHP Warning:  Use of undefined constant _RIJNDAEL_IV_ - assumed '_RIJNDAEL_IV_' (this will throw an Error in a future version of PHP) in /workspace/prestashop16/classes/Cookie.php on line 79
+[03-Sep-2025 12:12:44 Europe/Rome] PHP Stack trace:
+[03-Sep-2025 12:12:44 Europe/Rome] PHP   1. {main}() /workspace/prestashop16/modules/aerpoints/test_module.php:0
+[03-Sep-2025 12:12:44 Europe/Rome] PHP   2. require_once() /workspace/prestashop16/modules/aerpoints/test_module.php:7
+[03-Sep-2025 12:12:44 Europe/Rome] PHP   3. CookieCore->__construct($name = 'ps-s1', $path = '', $expire = 1758622364, $shared_urls = NULL, $standalone = FALSE, $secure = FALSE) /workspace/prestashop16/config/config.inc.php:174
+[03-Sep-2025 12:12:44 Europe/Rome] PHP Warning:  openssl_encrypt(): IV passed is only 7 bytes long, cipher expects an IV of precisely 16 bytes, padding with \0 in /workspace/prestashop16/classes/Rijndael.php on line 52
+[03-Sep-2025 12:12:44 Europe/Rome] PHP Stack trace:
+[03-Sep-2025 12:12:44 Europe/Rome] PHP   1. CookieCore->__destruct() /workspace/prestashop16/classes/Cookie.php:0
+[03-Sep-2025 12:12:44 Europe/Rome] PHP   2. CookieCore->write() /workspace/prestashop16/classes/Cookie.php:343
+[03-Sep-2025 12:12:44 Europe/Rome] PHP   3. CookieCore->_setcookie($cookie = 'date_add|2025-09-03 12:12:44Â¤id_lang|1Â¤id_currency|1Â¤checksum|501893244') /workspace/prestashop16/classes/Cookie.php:369
+[03-Sep-2025 12:12:44 Europe/Rome] PHP   4. RijndaelCore->encrypt($plaintext = 'date_add|2025-09-03 12:12:44Â¤id_lang|1Â¤id_currency|1Â¤checksum|501893244') /workspace/prestashop16/classes/Cookie.php:328
+[03-Sep-2025 12:12:44 Europe/Rome] PHP   5. openssl_encrypt($data = 'date_add|2025-09-03 12:12:44Â¤id_lang|1Â¤id_currency|1Â¤checksum|501893244', $method = 'AES-128-CBC', $password = '_RIJNDAEL_KEY_', $options = 1, $iv = 'D‚M\f\001\v!') /workspace/prestashop16/classes/Rijndael.php:52
+[03-Sep-2025 12:12:44 Europe/Rome] PHP Warning:  Use of undefined constant MCRYPT_RIJNDAEL_128 - assumed 'MCRYPT_RIJNDAEL_128' (this will throw an Error in a future version of PHP) in /workspace/prestashop16/classes/Rijndael.php on line 124
+[03-Sep-2025 12:12:44 Europe/Rome] PHP Stack trace:
+[03-Sep-2025 12:12:44 Europe/Rome] PHP   1. CookieCore->__destruct() /workspace/prestashop16/classes/Cookie.php:0
+[03-Sep-2025 12:12:44 Europe/Rome] PHP   2. CookieCore->write() /workspace/prestashop16/classes/Cookie.php:343
+[03-Sep-2025 12:12:44 Europe/Rome] PHP   3. CookieCore->_setcookie($cookie = 'date_add|2025-09-03 12:12:44Â¤id_lang|1Â¤id_currency|1Â¤checksum|501893244') /workspace/prestashop16/classes/Cookie.php:369
+[03-Sep-2025 12:12:44 Europe/Rome] PHP   4. RijndaelCore->encrypt($plaintext = 'date_add|2025-09-03 12:12:44Â¤id_lang|1Â¤id_currency|1Â¤checksum|501893244') /workspace/prestashop16/classes/Cookie.php:328
+[03-Sep-2025 12:12:44 Europe/Rome] PHP   5. RijndaelCore->generateHmac($encrypted = 'Öv»óŒ·\017í²î=ùúeÅ_®g\035/‘ƒíÕ„lŸ§š\023\003c%»ÄÍâmá4\002\030}i\rN‰JO}\nOóÅ_p\004‰\027\030$·w\036F=ƒ\036a»„5È\034ŠFcO') /workspace/prestashop16/classes/Rijndael.php:71

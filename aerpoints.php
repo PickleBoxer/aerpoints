@@ -48,29 +48,39 @@ class Aerpoints extends Module
         parent::__construct();
 
         $this->displayName = $this->l('AerPoints');
-        $this->description = $this->l('AerPoints module for Promotion');
+        $this->description = $this->l('Product-based loyalty points system for customer engagement');
 
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => '9.0');
     }
 
     /**
-     * Don't forget to create update methods if needed:
-     * http://doc.prestashop.com/display/PS16/Enabling+the+Auto-Update
+     * Module installation
      */
     public function install()
     {
-        Configuration::updateValue('AERPOINTS_LIVE_MODE', false);
+        Configuration::updateValue('AERPOINTS_ENABLED', 1);
+        Configuration::updateValue('AERPOINTS_POINT_VALUE', 100);
+        Configuration::updateValue('AERPOINTS_MIN_REDEMPTION', 100);
+        Configuration::updateValue('AERPOINTS_PARTIAL_PAYMENT', 1);
 
         include(dirname(__FILE__).'/sql/install.php');
 
         return parent::install() &&
             $this->registerHook('header') &&
-            $this->registerHook('displayBackOfficeHeader');
+            $this->registerHook('displayBackOfficeHeader') &&
+            $this->registerHook('actionValidateOrder') &&
+            $this->registerHook('actionOrderStatusPostUpdate') &&
+            $this->registerHook('displayProductButtons') &&
+            $this->registerHook('displayShoppingCartFooter') &&
+            $this->registerHook('displayCustomerAccount');
     }
 
     public function uninstall()
     {
-        Configuration::deleteByName('AERPOINTS_LIVE_MODE');
+        Configuration::deleteByName('AERPOINTS_ENABLED');
+        Configuration::deleteByName('AERPOINTS_POINT_VALUE');
+        Configuration::deleteByName('AERPOINTS_MIN_REDEMPTION');
+        Configuration::deleteByName('AERPOINTS_PARTIAL_PAYMENT');
 
         include(dirname(__FILE__).'/sql/uninstall.php');
 
@@ -138,19 +148,19 @@ class Aerpoints extends Module
                 'input' => array(
                     array(
                         'type' => 'switch',
-                        'label' => $this->l('Live mode'),
-                        'name' => 'AERPOINTS_LIVE_MODE',
+                        'label' => $this->l('Enable Points System'),
+                        'name' => 'AERPOINTS_ENABLED',
                         'is_bool' => true,
-                        'desc' => $this->l('Use this module in live mode'),
+                        'desc' => $this->l('Enable or disable the points system'),
                         'values' => array(
                             array(
                                 'id' => 'active_on',
-                                'value' => true,
+                                'value' => 1,
                                 'label' => $this->l('Enabled')
                             ),
                             array(
                                 'id' => 'active_off',
-                                'value' => false,
+                                'value' => 0,
                                 'label' => $this->l('Disabled')
                             )
                         ),
@@ -158,15 +168,35 @@ class Aerpoints extends Module
                     array(
                         'col' => 3,
                         'type' => 'text',
-                        'prefix' => '<i class="icon icon-envelope"></i>',
-                        'desc' => $this->l('Enter a valid email address'),
-                        'name' => 'AERPOINTS_ACCOUNT_EMAIL',
-                        'label' => $this->l('Email'),
+                        'desc' => $this->l('How many points equal 1 euro (default: 100)'),
+                        'name' => 'AERPOINTS_POINT_VALUE',
+                        'label' => $this->l('Points per Euro'),
                     ),
                     array(
-                        'type' => 'password',
-                        'name' => 'AERPOINTS_ACCOUNT_PASSWORD',
-                        'label' => $this->l('Password'),
+                        'col' => 3,
+                        'type' => 'text',
+                        'desc' => $this->l('Minimum points required for redemption'),
+                        'name' => 'AERPOINTS_MIN_REDEMPTION',
+                        'label' => $this->l('Minimum Redemption'),
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('Allow Partial Payment'),
+                        'name' => 'AERPOINTS_PARTIAL_PAYMENT',
+                        'is_bool' => true,
+                        'desc' => $this->l('Allow customers to use points for partial payment'),
+                        'values' => array(
+                            array(
+                                'id' => 'partial_on',
+                                'value' => 1,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'partial_off',
+                                'value' => 0,
+                                'label' => $this->l('Disabled')
+                            )
+                        ),
                     ),
                 ),
                 'submit' => array(
@@ -182,9 +212,10 @@ class Aerpoints extends Module
     protected function getConfigFormValues()
     {
         return array(
-            'AERPOINTS_LIVE_MODE' => Configuration::get('AERPOINTS_LIVE_MODE', true),
-            'AERPOINTS_ACCOUNT_EMAIL' => Configuration::get('AERPOINTS_ACCOUNT_EMAIL', 'contact@prestashop.com'),
-            'AERPOINTS_ACCOUNT_PASSWORD' => Configuration::get('AERPOINTS_ACCOUNT_PASSWORD', null),
+            'AERPOINTS_ENABLED' => (bool)Tools::getValue('AERPOINTS_ENABLED', Configuration::get('AERPOINTS_ENABLED')),
+            'AERPOINTS_POINT_VALUE' => (int)Tools::getValue('AERPOINTS_POINT_VALUE', Configuration::get('AERPOINTS_POINT_VALUE')),
+            'AERPOINTS_MIN_REDEMPTION' => (int)Tools::getValue('AERPOINTS_MIN_REDEMPTION', Configuration::get('AERPOINTS_MIN_REDEMPTION')),
+            'AERPOINTS_PARTIAL_PAYMENT' => (bool)Tools::getValue('AERPOINTS_PARTIAL_PAYMENT', Configuration::get('AERPOINTS_PARTIAL_PAYMENT')),
         );
     }
 
@@ -218,5 +249,165 @@ class Aerpoints extends Module
     {
         $this->context->controller->addJS($this->_path.'/views/js/front.js');
         $this->context->controller->addCSS($this->_path.'/views/css/front.css');
+    }
+
+    /**
+     * Hook: actionValidateOrder
+     * Called when order is validated - create pending points entry
+     */
+    public function hookActionValidateOrder($params)
+    {
+        if (!Configuration::get('AERPOINTS_ENABLED')) {
+            return;
+        }
+
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsPending.php');
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsCustomer.php');
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsHistory.php');
+
+        $order = $params['order'];
+        $cart = $params['cart'];
+        
+        $total_points_to_earn = 0;
+        $total_points_redeemed = 0;
+
+        // Calculate points to earn from products in cart
+        foreach ($cart->getProducts() as $product) {
+            $product_points = AerpointsProduct::getProductPoints($product['id_product']);
+            if ($product_points && $product_points['points_earn'] > 0) {
+                $total_points_to_earn += $product_points['points_earn'] * $product['quantity'];
+            }
+        }
+
+        // Handle point redemption from session
+        if (isset($this->context->cookie->aerpoints_redeem) && $this->context->cookie->aerpoints_redeem > 0) {
+            $total_points_redeemed = (int)$this->context->cookie->aerpoints_redeem;
+            
+            // Deduct points from customer immediately
+            AerpointsCustomer::removeCustomerPoints($order->id_customer, $total_points_redeemed);
+            
+            // Add history entry
+            AerpointsHistory::addHistoryEntry(
+                $order->id_customer,
+                -$total_points_redeemed,
+                AerpointsHistory::TYPE_REDEEMED,
+                'Points redeemed for order #'.$order->id
+            );
+            
+            // Clear redemption from session
+            unset($this->context->cookie->aerpoints_redeem);
+            $this->context->cookie->write();
+        }
+
+        // Create pending points entry for earned points
+        if ($total_points_to_earn > 0) {
+            AerpointsPending::createPendingEntry(
+                $order->id,
+                $order->id_customer,
+                $total_points_to_earn,
+                0 // Redeemed points are already processed above
+            );
+        }
+    }
+
+    /**
+     * Hook: actionOrderStatusPostUpdate
+     * Called when order status changes - process pending points
+     */
+    public function hookActionOrderStatusPostUpdate($params)
+    {
+        if (!Configuration::get('AERPOINTS_ENABLED')) {
+            return;
+        }
+
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsPending.php');
+
+        $order = new Order($params['id_order']);
+        $new_status = $params['newOrderStatus'];
+
+        // Check if order is completed (payment accepted)
+        if ($new_status->paid == 1) {
+            AerpointsPending::completePendingPoints($order->id);
+        }
+        // Check if order is cancelled
+        elseif ($new_status->id == Configuration::get('PS_OS_CANCELED')) {
+            AerpointsPending::cancelPendingPoints($order->id);
+        }
+    }
+
+    /**
+     * Hook: displayProductButtons
+     * Show points information under product price
+     */
+    public function hookDisplayProductButtons($params)
+    {
+        if (!Configuration::get('AERPOINTS_ENABLED')) {
+            return;
+        }
+
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
+
+        $product = $params['product'];
+        if (!$product) {
+            return;
+        }
+
+        $product_points = AerpointsProduct::getProductPoints($product['id_product']);
+        if (!$product_points || (!$product_points['points_earn'] && !$product_points['points_buy'])) {
+            return;
+        }
+
+        $this->context->smarty->assign(array(
+            'product_points' => $product_points,
+            'point_value' => Configuration::get('AERPOINTS_POINT_VALUE', 100),
+        ));
+
+        return $this->display(__FILE__, 'views/templates/hook/product_points.tpl');
+    }
+
+    /**
+     * Hook: displayShoppingCartFooter
+     * Show points redemption option in cart
+     */
+    public function hookDisplayShoppingCartFooter($params)
+    {
+        if (!Configuration::get('AERPOINTS_ENABLED')) {
+            return;
+        }
+
+        if (!$this->context->customer->isLogged()) {
+            return;
+        }
+
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsCustomer.php');
+
+        $customer_id = $this->context->customer->id;
+        $customer_points = AerpointsCustomer::getCustomerPoints($customer_id);
+        
+        // Check if points are being redeemed (from session)
+        $redeemed_points = (int)$this->context->cookie->aerpoints_redeem;
+        $redeemed_discount = $redeemed_points * (Configuration::get('AERPOINTS_POINT_VALUE', 100) / 100);
+
+        $this->context->smarty->assign(array(
+            'customer_points' => $customer_points,
+            'redeemed_points' => $redeemed_points,
+            'redeemed_discount' => Tools::displayPrice($redeemed_discount),
+        ));
+
+        return $this->display(__FILE__, 'views/templates/hook/cart_redemption.tpl');
+    }
+
+    /**
+     * Hook: displayCustomerAccount
+     * Add "My Points" link to customer account
+     */
+    public function hookDisplayCustomerAccount($params)
+    {
+        if (!Configuration::get('AERPOINTS_ENABLED')) {
+            return;
+        }
+
+        return $this->display(__FILE__, 'views/templates/hook/customer_account.tpl');
     }
 }

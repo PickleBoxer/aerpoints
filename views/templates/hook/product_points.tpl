@@ -1,4 +1,4 @@
-/**
+{*
 * 2007-2025 PrestaShop
 *
 * NOTICE OF LICENSE
@@ -21,47 +21,28 @@
 *  @copyright 2007-2025 PrestaShop SA
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
-*/
+*}
 
-/* AerPoints Frontend Styles */
-
-.aerpoints-product-info {
-    margin: 10px 0;
-    padding: 8px 0;
-    border-top: 1px solid #eee;
-    font-size: 13px;
-}
-
-.aerpoints-earn,
-.aerpoints-buy {
-    margin: 5px 0;
-    padding: 5px 8px;
-    border-radius: 3px;
-    display: inline-block;
-}
-
-.aerpoints-earn {
-    background: #f0f8ff;
-    color: #337ab7;
-    border: 1px solid #bee5eb;
-}
-
-.aerpoints-buy {
-    background: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffeaa7;
-}
-
-.aerpoints-earn i,
-.aerpoints-buy i {
-    margin-right: 5px;
-}
-
-.aerpoints-text strong {
-    font-weight: bold;
-}
-
-.aerpoints-text small {
-    color: #666;
-    font-size: 11px;
-}
+{if $product_points}
+<div class="aerpoints-product-info">
+    {if $product_points.points_earn > 0}
+    <div class="aerpoints-earn">
+        <i class="icon-trophy"></i>
+        <span class="aerpoints-text">
+            {l s='Earn' mod='aerpoints'} <strong>{$product_points.points_earn}</strong> {l s='points' mod='aerpoints'}
+        </span>
+    </div>
+    {/if}
+    
+    {if $product_points.points_buy > 0}
+    <div class="aerpoints-buy">
+        <i class="icon-gift"></i>
+        <span class="aerpoints-text">
+            {l s='Buy with' mod='aerpoints'} <strong>{$product_points.points_buy}</strong> {l s='points' mod='aerpoints'}
+            {assign var="discount_value" value=($product_points.points_buy / $point_value)}
+            <small>({l s='≈' mod='aerpoints'} {$discount_value|string_format:"%.2f"}€)</small>
+        </span>
+    </div>
+    {/if}
+</div>
+{/if}

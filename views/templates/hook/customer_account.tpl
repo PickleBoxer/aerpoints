@@ -1,4 +1,4 @@
-/**
+{*
 * 2007-2025 PrestaShop
 *
 * NOTICE OF LICENSE
@@ -21,47 +21,11 @@
 *  @copyright 2007-2025 PrestaShop SA
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
-*/
+*}
 
-/* AerPoints Frontend Styles */
-
-.aerpoints-product-info {
-    margin: 10px 0;
-    padding: 8px 0;
-    border-top: 1px solid #eee;
-    font-size: 13px;
-}
-
-.aerpoints-earn,
-.aerpoints-buy {
-    margin: 5px 0;
-    padding: 5px 8px;
-    border-radius: 3px;
-    display: inline-block;
-}
-
-.aerpoints-earn {
-    background: #f0f8ff;
-    color: #337ab7;
-    border: 1px solid #bee5eb;
-}
-
-.aerpoints-buy {
-    background: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffeaa7;
-}
-
-.aerpoints-earn i,
-.aerpoints-buy i {
-    margin-right: 5px;
-}
-
-.aerpoints-text strong {
-    font-weight: bold;
-}
-
-.aerpoints-text small {
-    color: #666;
-    font-size: 11px;
-}
+<li>
+    <a href="{$link->getModuleLink('aerpoints', 'customerpoints')|escape:'html':'UTF-8'}" title="{l s='My Points' mod='aerpoints'}">
+        <i class="icon-trophy"></i>
+        <span>{l s='My Points' mod='aerpoints'}</span>
+    </a>
+</li>

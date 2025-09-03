@@ -24,6 +24,17 @@
 *  International Registered Trademark & Property of PrestaShop SA
 */
 
+$sql = array();
+
+$sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'aerpoints_history`';
+$sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'aerpoints_pending`';
+$sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'aerpoints_product`';
+$sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'aerpoints_customer`';
+
+foreach ($sql as $query) {
+    Db::getInstance()->execute($query);
+}
+
 /**
  * In some cases you should not drop the tables.
  * Maybe the merchant will just try to reset the module
