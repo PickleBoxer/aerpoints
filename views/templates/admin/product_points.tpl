@@ -77,6 +77,11 @@
             <p><strong>{l s='Note:' mod='aerpoints'}</strong> {l s='Set both values to 0 to remove points configuration for this product.' mod='aerpoints'}</p>
         </div>
     </div>
+    <div class="panel-footer">
+        <a href="{$link->getAdminLink('AdminAerpointsProduct')|escape:'html':'UTF-8'}" class="btn btn-default"><i class="process-icon-cancel"></i> {l s='Cancel' mod='aerpoints'}</a>
+        <button type="submit" name="submitAddproduct" class="btn btn-default pull-right" disabled="disabled"><i class="process-icon-loading"></i> {l s='Save' mod='aerpoints'}</button>
+        <button type="submit" name="submitAddproductAndStay" class="btn btn-default pull-right" disabled="disabled"><i class="process-icon-loading"></i> {l s='Save and stay' mod='aerpoints'}</button>
+    </div>
 </div>
 
 <style>
