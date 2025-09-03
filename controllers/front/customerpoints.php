@@ -32,7 +32,8 @@ class AerpointsCustomerpointsModuleFrontController extends ModuleFrontController
         $customer_id = $this->context->customer->id;
         
         // Get customer points
-        $customer_points = AerpointsCustomer::getCustomerPoints($customer_id);
+        //$customer_points = AerpointsCustomer::getCustomerPoints($customer_id);
+        $customer_points = AerpointsCustomer::getPointBalance($customer_id);
         
         // Get points history
         $points_history = AerpointsHistory::getCustomerHistory($customer_id);

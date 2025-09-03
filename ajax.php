@@ -38,7 +38,8 @@ switch ($action) {
         
         // Check if customer has enough points
         include_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsCustomer.php');
-        $customer_points = AerpointsCustomer::getCustomerPoints($customer_id);
+        //$customer_points = AerpointsCustomer::getCustomerPoints($customer_id);
+        $customer_points = AerpointsCustomer::getPointBalance($customer_id);
         
         if ($points > $customer_points) {
             die(json_encode(array('error' => 'Not enough points')));

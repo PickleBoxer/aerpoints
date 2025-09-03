@@ -361,7 +361,7 @@ class Aerpoints extends Module
             return;
         }
 
-        $product_points = AerpointsProduct::getProductPoints($product['id_product']);
+        $product_points = AerpointsProduct::getProductPoints($product->id);
         if (!$product_points || (!$product_points['points_earn'] && !$product_points['points_buy'])) {
             return;
         }
@@ -391,7 +391,8 @@ class Aerpoints extends Module
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsCustomer.php');
 
         $customer_id = $this->context->customer->id;
-        $customer_points = AerpointsCustomer::getCustomerPoints($customer_id);
+        //$customer_points = AerpointsCustomer::getCustomerPoints($customer_id);
+        $customer_points = AerpointsCustomer::getPointBalance($customer_id);
         
         // Check if points are being redeemed (from session)
         $redeemed_points = (int)$this->context->cookie->aerpoints_redeem;
