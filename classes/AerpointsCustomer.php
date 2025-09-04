@@ -82,10 +82,10 @@ class AerpointsCustomer extends ObjectModel
     /**
      * Add points to customer
      */
-    public static function addPoints($id_customer, $points, $description = '', $id_order = null)
+    public static function addPoints($id_customer, $points, $type = null, $description = '', $id_order = null)
     {
         if ($points <= 0) {
-            return false;
+            throw new Exception('Points to add must be greater than zero.');
         }
 
         // Get or create customer record
@@ -117,7 +117,7 @@ class AerpointsCustomer extends ObjectModel
             AerpointsHistory::addHistoryEntry(
                 $id_customer, 
                 $points, 
-                AerpointsHistory::TYPE_EARNED, 
+                $type ?? AerpointsHistory::TYPE_EARNED, 
                 $description ?: 'Points earned',
                 $id_order
             );
@@ -129,15 +129,15 @@ class AerpointsCustomer extends ObjectModel
     /**
      * Remove points from customer
      */
-    public static function removePoints($id_customer, $points, $description = '', $id_order = null)
+    public static function removePoints($id_customer, $points, $type = null, $description = '', $id_order = null)
     {
         if ($points <= 0) {
-            return false;
+            throw new Exception('Points to remove must be greater than zero.');
         }
 
         $available_points = self::getPointBalance($id_customer);
         if ($available_points < $points) {
-            return false; // Insufficient points
+            throw new Exception('Insufficient points.');
         }
 
         $sql = 'UPDATE ' . _DB_PREFIX_ . 'aerpoints_customer 
@@ -154,7 +154,7 @@ class AerpointsCustomer extends ObjectModel
             AerpointsHistory::addHistoryEntry(
                 $id_customer, 
                 -$points, 
-                AerpointsHistory::TYPE_REDEEMED, 
+                $type ?? AerpointsHistory::TYPE_REDEEMED, 
                 $description ?: 'Points redeemed',
                 $id_order
             );

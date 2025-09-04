@@ -1,30 +1,30 @@
 <?php
 /**
-* 2007-2025 PrestaShop
-*
-* NOTICE OF LICENSE
-*
-* This source file is subject to the Academic Free License (AFL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
-* It is also available through the world-wide-web at this URL:
-* http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
-* DISCLAIMER
-*
-* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
-* versions in the future. If you wish to customize PrestaShop for your
-* needs please refer to http://www.prestashop.com for more information.
-*
-*  @author    PrestaShop SA <contact@prestashop.com>
-*  @copyright 2007-2025 PrestaShop SA
-*  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
-*/
+ * 2007-2025 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ *  @author    PrestaShop SA <contact@prestashop.com>
+ *  @copyright 2007-2025 PrestaShop SA
+ *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  International Registered Trademark & Property of PrestaShop SA
+ */
 
-if (!defined('_PS_VERSION_')) {
+if (! defined('_PS_VERSION_')) {
     exit;
 }
 
@@ -100,16 +100,16 @@ class Aerpoints extends Module
         /**
          * If values have been submitted in the form, process.
          */
-        if (((bool)Tools::isSubmit('submitAerpointsModule')) == true) {
+        if (((bool) Tools::isSubmit('submitAerpointsModule')) == true) {
             $this->postProcess();
         }
 
         $this->context->smarty->assign(
-			array(
-				'link' => $this->context->link,
-				'module_dir' => $this->_path
-			)
-		);
+            array(
+                'link' => $this->context->link,
+                'module_dir' => $this->_path
+            )
+        );
 
         $output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');
 
@@ -152,8 +152,8 @@ class Aerpoints extends Module
         return array(
             'form' => array(
                 'legend' => array(
-                'title' => $this->l('Settings'),
-                'icon' => 'icon-cogs',
+                    'title' => $this->l('Settings'),
+                    'icon' => 'icon-cogs',
                 ),
                 'input' => array(
                     array(
@@ -222,10 +222,10 @@ class Aerpoints extends Module
     protected function getConfigFormValues()
     {
         return array(
-            'AERPOINTS_ENABLED' => (bool)Tools::getValue('AERPOINTS_ENABLED', Configuration::get('AERPOINTS_ENABLED')),
-            'AERPOINTS_POINT_VALUE' => (int)Tools::getValue('AERPOINTS_POINT_VALUE', Configuration::get('AERPOINTS_POINT_VALUE')),
-            'AERPOINTS_MIN_REDEMPTION' => (int)Tools::getValue('AERPOINTS_MIN_REDEMPTION', Configuration::get('AERPOINTS_MIN_REDEMPTION')),
-            'AERPOINTS_PARTIAL_PAYMENT' => (bool)Tools::getValue('AERPOINTS_PARTIAL_PAYMENT', Configuration::get('AERPOINTS_PARTIAL_PAYMENT')),
+            'AERPOINTS_ENABLED' => (bool) Tools::getValue('AERPOINTS_ENABLED', Configuration::get('AERPOINTS_ENABLED')),
+            'AERPOINTS_POINT_VALUE' => (int) Tools::getValue('AERPOINTS_POINT_VALUE', Configuration::get('AERPOINTS_POINT_VALUE')),
+            'AERPOINTS_MIN_REDEMPTION' => (int) Tools::getValue('AERPOINTS_MIN_REDEMPTION', Configuration::get('AERPOINTS_MIN_REDEMPTION')),
+            'AERPOINTS_PARTIAL_PAYMENT' => (bool) Tools::getValue('AERPOINTS_PARTIAL_PAYMENT', Configuration::get('AERPOINTS_PARTIAL_PAYMENT')),
         );
     }
 
@@ -242,8 +242,8 @@ class Aerpoints extends Module
     }
 
     /**
-    * Add the CSS & JavaScript files you want to be loaded in the BO.
-    */
+     * Add the CSS & JavaScript files you want to be loaded in the BO.
+     */
     public function hookDisplayBackOfficeHeader()
     {
         if (Tools::getValue('configure') == $this->name) {
@@ -267,7 +267,7 @@ class Aerpoints extends Module
      */
     public function hookActionValidateOrder($params)
     {
-        if (!Configuration::get('AERPOINTS_ENABLED')) {
+        if (! Configuration::get('AERPOINTS_ENABLED')) {
             return;
         }
 
@@ -278,7 +278,7 @@ class Aerpoints extends Module
 
         $order = $params['order'];
         $cart = $params['cart'];
-        
+
         $total_points_to_earn = 0;
         $total_points_redeemed = 0;
 
@@ -292,11 +292,11 @@ class Aerpoints extends Module
 
         // Handle point redemption from session
         if (isset($this->context->cookie->aerpoints_redeem) && $this->context->cookie->aerpoints_redeem > 0) {
-            $total_points_redeemed = (int)$this->context->cookie->aerpoints_redeem;
-            
+            $total_points_redeemed = (int) $this->context->cookie->aerpoints_redeem;
+
             // Deduct points from customer immediately
             AerpointsCustomer::removeCustomerPoints($order->id_customer, $total_points_redeemed);
-            
+
             // Add history entry
             AerpointsHistory::addHistoryEntry(
                 $order->id_customer,
@@ -304,7 +304,7 @@ class Aerpoints extends Module
                 AerpointsHistory::TYPE_REDEEMED,
                 'Points redeemed for order #'.$order->id
             );
-            
+
             // Clear redemption from session
             unset($this->context->cookie->aerpoints_redeem);
             $this->context->cookie->write();
@@ -327,7 +327,7 @@ class Aerpoints extends Module
      */
     public function hookActionOrderStatusPostUpdate($params)
     {
-        if (!Configuration::get('AERPOINTS_ENABLED')) {
+        if (! Configuration::get('AERPOINTS_ENABLED')) {
             return;
         }
 
@@ -352,19 +352,19 @@ class Aerpoints extends Module
      */
     public function hookDisplayProductButtons($params)
     {
-        if (!Configuration::get('AERPOINTS_ENABLED')) {
+        if (! Configuration::get('AERPOINTS_ENABLED')) {
             return;
         }
 
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
 
         $product = $params['product'];
-        if (!$product) {
+        if (! $product) {
             return;
         }
 
         $product_points = AerpointsProduct::getProductPoints($product->id);
-        if (!$product_points || (!$product_points['points_earn'] && !$product_points['points_buy'])) {
+        if (! $product_points || (! $product_points['points_earn'] && ! $product_points['points_buy'])) {
             return;
         }
 
@@ -382,11 +382,11 @@ class Aerpoints extends Module
      */
     public function hookDisplayShoppingCartFooter($params)
     {
-        if (!Configuration::get('AERPOINTS_ENABLED')) {
+        if (! Configuration::get('AERPOINTS_ENABLED')) {
             return;
         }
 
-        if (!$this->context->customer->isLogged()) {
+        if (! $this->context->customer->isLogged()) {
             return;
         }
 
@@ -395,9 +395,9 @@ class Aerpoints extends Module
         $customer_id = $this->context->customer->id;
         //$customer_points = AerpointsCustomer::getCustomerPoints($customer_id);
         $customer_points = AerpointsCustomer::getPointBalance($customer_id);
-        
+
         // Check if points are being redeemed (from session)
-        $redeemed_points = (int)$this->context->cookie->aerpoints_redeem;
+        $redeemed_points = (int) $this->context->cookie->aerpoints_redeem;
         $redeemed_discount = $redeemed_points * (Configuration::get('AERPOINTS_POINT_VALUE', 100) / 100);
 
         $this->context->smarty->assign(array(
@@ -415,7 +415,7 @@ class Aerpoints extends Module
      */
     public function hookDisplayCustomerAccount($params)
     {
-        if (!Configuration::get('AERPOINTS_ENABLED')) {
+        if (! Configuration::get('AERPOINTS_ENABLED')) {
             return;
         }
 
@@ -428,15 +428,15 @@ class Aerpoints extends Module
      */
     public function hookDisplayAdminProductsExtra($params)
     {
-        if (!Configuration::get('AERPOINTS_ENABLED')) {
+        if (! Configuration::get('AERPOINTS_ENABLED')) {
             return;
         }
 
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
 
-        $id_product = (int)Tools::getValue('id_product');
+        $id_product = (int) Tools::getValue('id_product');
         $product_points = null;
-        
+
         if ($id_product > 0) {
             $product_points = AerpointsProduct::getProductPoints($id_product);
         }
@@ -455,15 +455,15 @@ class Aerpoints extends Module
      */
     public function hookActionProductUpdate($params)
     {
-        if (!Configuration::get('AERPOINTS_ENABLED')) {
+        if (! Configuration::get('AERPOINTS_ENABLED')) {
             return;
         }
 
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
 
-        $id_product = (int)$params['id_product'];
-        $points_earn = (int)Tools::getValue('aerpoints_earn');
-        $points_buy = (int)Tools::getValue('aerpoints_buy');
+        $id_product = (int) $params['id_product'];
+        $points_earn = (int) Tools::getValue('aerpoints_earn');
+        $points_buy = (int) Tools::getValue('aerpoints_buy');
 
         // Only save if at least one point value is set
         if ($points_earn > 0 || $points_buy > 0) {
@@ -480,7 +480,7 @@ class Aerpoints extends Module
      */
     public function hookDisplayAdminOrder($params)
     {
-        if (!Configuration::get('AERPOINTS_ENABLED')) {
+        if (! Configuration::get('AERPOINTS_ENABLED')) {
             return;
         }
 
@@ -488,10 +488,10 @@ class Aerpoints extends Module
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsPending.php');
 
         $order = new Order($params['id_order']);
-        
+
         // Get points history for this order
         $order_history = AerpointsHistory::getOrderHistory($order->id);
-        
+
         // Get pending points for this order
         $pending_points = AerpointsPending::getOrderPending($order->id);
 
@@ -510,7 +510,7 @@ class Aerpoints extends Module
      */
     public function hookDisplayAdminCustomers($params)
     {
-        if (!Configuration::get('AERPOINTS_ENABLED')) {
+        if (! Configuration::get('AERPOINTS_ENABLED')) {
             return;
         }
 
@@ -518,10 +518,10 @@ class Aerpoints extends Module
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsCustomer.php');
 
         $customer = new Customer($params['id_customer']);
-        
+
         // Get customer points balance
         $customer_points = AerpointsCustomer::getPointBalance($customer->id);
-        
+
         // Get customer points history
         $customer_history = AerpointsHistory::getCustomerHistory($customer->id, 10); // Last 10 transactions
 
@@ -529,6 +529,8 @@ class Aerpoints extends Module
             'customer_points' => $customer_points,
             'customer_history' => $customer_history,
             'customer_id' => $customer->id,
+            'ajax_url' => $this->context->link->getAdminLink('AdminModules', false)
+                .'&configure='.$this->name.'&tab_module='.$this->tab.'&module_name='.$this->name.'&token='.Tools::getAdminTokenLite('AdminModules'),
         ));
 
         return $this->display(__FILE__, 'views/templates/admin/customer_points.tpl');
@@ -546,7 +548,7 @@ class Aerpoints extends Module
         foreach (Language::getLanguages(true) as $lang) {
             $tab->name[$lang['id_lang']] = 'AerPoints Products';
         }
-        $tab->id_parent = (int)Tab::getIdFromClassName('AdminCatalog');
+        $tab->id_parent = (int) Tab::getIdFromClassName('AdminCatalog');
         $tab->module = $this->name;
         return $tab->add();
     }
@@ -556,11 +558,78 @@ class Aerpoints extends Module
      */
     private function uninstallTab()
     {
-        $id_tab = (int)Tab::getIdFromClassName('AdminAerpointsProduct');
+        $id_tab = (int) Tab::getIdFromClassName('AdminAerpointsProduct');
         if ($id_tab) {
             $tab = new Tab($id_tab);
             return $tab->delete();
         }
         return true;
+    }
+
+    public function ajaxProcessAdjustPoints()
+    {
+        if (! Configuration::get('AERPOINTS_ENABLED')) {
+            die(json_encode(array('success' => false, 'error' => 'Module is disabled')));
+        }
+
+        try {
+            // Get POST data
+            $action = Tools::getValue('adjust_type');
+            $customer_id = (int) Tools::getValue('customer_id');
+            $points = (int) Tools::getValue('points');
+
+            // Validate input
+            if (! in_array($action, array('add', 'remove'))) {
+                throw new Exception('Invalid action');
+            }
+
+            if ($customer_id <= 0) {
+                throw new Exception('Invalid customer ID');
+            }
+
+            if ($points <= 0) {
+                throw new Exception('Points must be greater than 0');
+            }
+
+            // Include necessary classes
+            include_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsCustomer.php');
+            include_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsHistory.php');
+
+            // Adjust points based on action
+            if ($action == 'add') {
+                $result = AerpointsCustomer::addPoints($customer_id, $points, AerpointsHistory::TYPE_MANUAL_ADD);
+                $type = AerpointsHistory::TYPE_MANUAL_ADD;
+                $description = 'Manual addition by admin';
+            } else {
+                $result = AerpointsCustomer::removePoints($customer_id, $points, AerpointsHistory::TYPE_MANUAL_REMOVE);
+                $type = AerpointsHistory::TYPE_MANUAL_REMOVE;
+                $description = 'Manual removal by admin';
+                $points = -$points; // Make negative for history
+            }
+
+            if ($result) {
+                // Add to history
+                //AerpointsHistory::addHistoryEntry($customer_id, $points, $type, $description);
+
+                // Get updated balance
+                $new_balance = AerpointsCustomer::getPointBalance($customer_id);
+
+                echo json_encode(array(
+                    'success' => true,
+                    'message' => 'Points adjusted successfully',
+                    'new_balance' => $new_balance,
+                    'points_adjusted' => abs($points),
+                    'action' => $action
+                ));
+            } else {
+                throw new Exception('Failed to adjust points');
+            }
+
+        } catch (Exception $e) {
+            echo json_encode(array(
+                'success' => false,
+                'message' => $e->getMessage()
+            ));
+        }
     }
 }

@@ -117,6 +117,7 @@
 </div>
 
 <script type="text/javascript">
+var ajax_url = '{$ajax_url}';
 {literal}
 function adjustPoints(customerId, action) {
     var points = parseInt(document.getElementById('manual_points').value);
@@ -126,31 +127,31 @@ function adjustPoints(customerId, action) {
     }
     
     if (confirm('Are you sure you want to ' + action + ' ' + points + ' points for this customer?')) {
-        // You can implement AJAX call here for manual point adjustments
-        var form = document.createElement('form');
-        form.method = 'post';
-        form.action = '';
-        
-        var actionInput = document.createElement('input');
-        actionInput.type = 'hidden';
-        actionInput.name = 'aerpoints_action';
-        actionInput.value = action;
-        form.appendChild(actionInput);
-        
-        var pointsInput = document.createElement('input');
-        pointsInput.type = 'hidden';
-        pointsInput.name = 'aerpoints_amount';
-        pointsInput.value = points;
-        form.appendChild(pointsInput);
-        
-        var customerInput = document.createElement('input');
-        customerInput.type = 'hidden';
-        customerInput.name = 'aerpoints_customer';
-        customerInput.value = customerId;
-        form.appendChild(customerInput);
-        
-        document.body.appendChild(form);
-        form.submit();
+        // AJAX call for manual point adjustments
+        $.ajax({
+            url: ajax_url,
+            type: 'POST',
+            cache: false,
+            dataType: 'json',
+            data: {
+                ajax: true,
+                action: 'adjustPoints',
+                customer_id: customerId,
+                points: points,
+                adjust_type: action
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('Points successfully ' + (action == 'add' ? 'added' : 'removed') + '. New balance: ' + response.new_balance + ' points.');
+                    location.reload();
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            },
+            error: function() {
+                alert('An error occurred while processing the request.');
+            }
+        });
     }
 }
 {/literal}
