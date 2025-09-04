@@ -1,17 +1,19 @@
 <?php
 /**
-* 2007-2025 PrestaShop
-*
-* NOTICE OF LICENSE
-*
-* This source file is subject to the Academic Free License (AFL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
-*
-*  @author    PrestaShop SA <contact@prestashop.com>
-*  @copyright 2007-2025 PrestaShop SA
-*  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
-*/
+ * 2007-2025 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ *
+ *  @author    PrestaShop SA <contact@prestashop.com>
+ *  @copyright 2007-2025 PrestaShop SA
+ *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *  International Registered Trademark & Property of PrestaShop SA
+ */
+
+require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
 
 class AdminAerpointsProductController extends ModuleAdminController
 {
@@ -33,7 +35,21 @@ class AdminAerpointsProductController extends ModuleAdminController
         $this->addRowAction('edit');
         $this->addRowAction('delete');
 
-        $this->fields_list = array(
+        parent::__construct();
+
+        $this->fields_list = $this->getFieldsList();
+
+        $this->_select = 'pl.name as product_name';
+        $this->_join = 'LEFT JOIN `'._DB_PREFIX_.'product_lang` pl ON (a.`id_product` = pl.`id_product` AND pl.`id_lang` = '.(int) $this->context->language->id.')';
+        $this->_where = 'AND (a.points_earn > 0 OR a.points_buy > 0)';
+    }
+
+    /**
+     * Define fields list configuration
+     */
+    private function getFieldsList()
+    {
+        return array(
             'id_product' => array(
                 'title' => $this->l('Product ID'),
                 'align' => 'center',
@@ -60,17 +76,31 @@ class AdminAerpointsProductController extends ModuleAdminController
                 'type' => 'datetime'
             )
         );
+    }
 
-        parent::__construct();
+    /**
+     * Override renderList to add content after the product table
+     */
+    public function renderList()
+    {
+        return parent::renderList() . $this->renderCombinedCard();
+    }
 
-        $this->_select = 'pl.name as product_name';
-        $this->_join = 'LEFT JOIN `'._DB_PREFIX_.'product_lang` pl ON (a.`id_product` = pl.`id_product` AND pl.`id_lang` = '.(int)$this->context->language->id.')';
-        $this->_where = 'AND (a.points_earn > 0 OR a.points_buy > 0)';
+    /**
+     * Render combined explanation and product selection card
+     */
+    private function renderCombinedCard()
+    {
+        // Get products for the dropdown
+        $products = Product::getProducts($this->context->language->id, 0, 0, 'name', 'ASC');
+        $this->context->smarty->assign('products', $products);
+        
+        return $this->context->smarty->fetch(_PS_MODULE_DIR_.'aerpoints/views/templates/admin/product_configuration_panel.tpl');
     }
 
     public function renderForm()
     {
-        if (!($obj = $this->loadObject(true))) {
+        if (! ($obj = $this->loadObject(true))) {
             return;
         }
 
@@ -112,8 +142,17 @@ class AdminAerpointsProductController extends ModuleAdminController
             )
         );
 
-        if (!$obj->id) {
-            unset($this->fields_form['input'][0]);
+
+        // Always show product dropdown for new entries
+        // For editing, disable the dropdown to prevent changing product
+        if ($obj->id) {
+            // Find the product select input and set 'disabled' => true
+            foreach ($this->fields_form['input'] as &$input) {
+                if ($input['name'] === 'id_product') {
+                    $input['disabled'] = true;
+                    break;
+                }
+            }
         }
 
         return parent::renderForm();
@@ -122,9 +161,18 @@ class AdminAerpointsProductController extends ModuleAdminController
     public function postProcess()
     {
         if (Tools::isSubmit('submitAdd'.$this->table)) {
-            $id_product = (int)Tools::getValue('id_product');
-            $points_earn = (int)Tools::getValue('points_earn');
-            $points_buy = (int)Tools::getValue('points_buy');
+            // Try to get id_product from POST, fallback to object if editing
+            $id_product = (int) Tools::getValue('id_product');
+            $points_earn = (int) Tools::getValue('points_earn');
+            $points_buy = (int) Tools::getValue('points_buy');
+
+            // If editing and id_product is missing (input disabled), get from object
+            if (! $id_product && Tools::getValue('id_aerpoints_product')) {
+                $obj = $this->loadObject(true);
+                if ($obj && isset($obj->id_product)) {
+                    $id_product = (int) $obj->id_product;
+                }
+            }
 
             if ($points_earn < 0 || $points_buy < 0) {
                 $this->errors[] = Tools::displayError($this->l('Points values cannot be negative'));
@@ -136,22 +184,21 @@ class AdminAerpointsProductController extends ModuleAdminController
                 return false;
             }
 
-            if (!Product::existsInDatabase($id_product, 'product')) {
+            if (! Product::existsInDatabase($id_product, 'product')) {
                 $this->errors[] = Tools::displayError($this->l('Invalid product selected'));
                 return false;
             }
 
             // Check if product already has points configuration
-            require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
             $existing = AerpointsProduct::getProductPoints($id_product);
-            
-            if ($existing && !Tools::getValue('id_aerpoints_product')) {
+
+            if ($existing && ! Tools::getValue('id_aerpoints_product')) {
                 $this->errors[] = Tools::displayError($this->l('This product already has points configuration. Please edit the existing entry.'));
                 return false;
             }
 
             AerpointsProduct::setProductPoints($id_product, $points_earn, $points_buy);
-            
+
             $this->confirmations[] = $this->l('Product points configuration saved successfully');
             return true;
         }
@@ -161,12 +208,10 @@ class AdminAerpointsProductController extends ModuleAdminController
 
     public function processBulkDelete()
     {
-        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
-        
         $ids = Tools::getValue($this->table.'Box');
         if (is_array($ids) && count($ids)) {
             foreach ($ids as $id) {
-                $product_points = new AerpointsProduct((int)$id);
+                $product_points = new AerpointsProduct((int) $id);
                 if (Validate::isLoadedObject($product_points)) {
                     AerpointsProduct::deleteProductPoints($product_points->id_product);
                 }
@@ -177,11 +222,9 @@ class AdminAerpointsProductController extends ModuleAdminController
 
     public function processDelete()
     {
-        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
-        
-        $id = (int)Tools::getValue('id_aerpoints_product');
+        $id = (int) Tools::getValue('id_aerpoints_product');
         $product_points = new AerpointsProduct($id);
-        
+
         if (Validate::isLoadedObject($product_points)) {
             AerpointsProduct::deleteProductPoints($product_points->id_product);
             $this->confirmations[] = $this->l('Product points configuration deleted successfully');

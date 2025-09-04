@@ -28,12 +28,6 @@ if (! defined('_PS_VERSION_')) {
     exit;
 }
 
-include_once(_PS_CLASS_DIR_.'Order.php');
-include_once(_PS_CLASS_DIR_.'Configuration.php');
-include_once(_PS_CLASS_DIR_.'Customer.php');
-include_once(_PS_CLASS_DIR_.'Tab.php');
-include_once(_PS_CLASS_DIR_.'Language.php');
-
 class Aerpoints extends Module
 {
     protected $config_form = false;
