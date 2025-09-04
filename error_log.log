@@ -46,3 +46,33 @@
 [03-Sep-2025 12:52:25 Europe/Rome] PHP   3. CookieCore->_setcookie($cookie = 'date_add|2025-09-03 12:52:25Â¤id_lang|1Â¤id_currency|1Â¤checksum|744855716') /workspace/prestashop16/classes/Cookie.php:369
 [03-Sep-2025 12:52:25 Europe/Rome] PHP   4. RijndaelCore->encrypt($plaintext = 'date_add|2025-09-03 12:52:25Â¤id_lang|1Â¤id_currency|1Â¤checksum|744855716') /workspace/prestashop16/classes/Cookie.php:328
 [03-Sep-2025 12:52:25 Europe/Rome] PHP   5. RijndaelCore->generateHmac($encrypted = 'Öv»óŒ·\017í²î=ùúeÅ_?\036œ\\\004Ëð\004¼îp†À8\aí\b\t™`1N¶\006\020…ä¨_¾Â\\ÀT\v)Aúª™KWÖâÉ¢%«€[~îlÔDãÁ\005ÝÒªf') /workspace/prestashop16/classes/Rijndael.php:71
+[03-Sep-2025 15:20:44 Europe/Rome] PHP Warning:  Use of undefined constant _RIJNDAEL_KEY_ - assumed '_RIJNDAEL_KEY_' (this will throw an Error in a future version of PHP) in /workspace/prestashop16/classes/Cookie.php on line 79
+[03-Sep-2025 15:20:44 Europe/Rome] PHP Stack trace:
+[03-Sep-2025 15:20:44 Europe/Rome] PHP   1. {main}() /workspace/prestashop16/modules/aerpoints/test_module.php:0
+[03-Sep-2025 15:20:44 Europe/Rome] PHP   2. require_once() /workspace/prestashop16/modules/aerpoints/test_module.php:7
+[03-Sep-2025 15:20:44 Europe/Rome] PHP   3. CookieCore->__construct($name = 'ps-s1', $path = '', $expire = 1758633644, $shared_urls = NULL, $standalone = FALSE, $secure = TRUE) /workspace/prestashop16/config/config.inc.php:174
+[03-Sep-2025 15:20:44 Europe/Rome] PHP Warning:  Use of undefined constant _RIJNDAEL_IV_ - assumed '_RIJNDAEL_IV_' (this will throw an Error in a future version of PHP) in /workspace/prestashop16/classes/Cookie.php on line 79
+[03-Sep-2025 15:20:44 Europe/Rome] PHP Stack trace:
+[03-Sep-2025 15:20:44 Europe/Rome] PHP   1. {main}() /workspace/prestashop16/modules/aerpoints/test_module.php:0
+[03-Sep-2025 15:20:44 Europe/Rome] PHP   2. require_once() /workspace/prestashop16/modules/aerpoints/test_module.php:7
+[03-Sep-2025 15:20:44 Europe/Rome] PHP   3. CookieCore->__construct($name = 'ps-s1', $path = '', $expire = 1758633644, $shared_urls = NULL, $standalone = FALSE, $secure = TRUE) /workspace/prestashop16/config/config.inc.php:174
+[03-Sep-2025 15:20:53 Europe/Rome] PHP Warning:  Use of undefined constant _RIJNDAEL_KEY_ - assumed '_RIJNDAEL_KEY_' (this will throw an Error in a future version of PHP) in /workspace/prestashop16/classes/Cookie.php on line 79
+[03-Sep-2025 15:20:53 Europe/Rome] PHP Stack trace:
+[03-Sep-2025 15:20:53 Europe/Rome] PHP   1. {main}() /workspace/prestashop16/modules/aerpoints/test_module.php:0
+[03-Sep-2025 15:20:53 Europe/Rome] PHP   2. require_once() /workspace/prestashop16/modules/aerpoints/test_module.php:7
+[03-Sep-2025 15:20:53 Europe/Rome] PHP   3. CookieCore->__construct($name = 'ps-s1', $path = '', $expire = 1758633653, $shared_urls = NULL, $standalone = FALSE, $secure = TRUE) /workspace/prestashop16/config/config.inc.php:174
+[03-Sep-2025 15:20:53 Europe/Rome] PHP Warning:  Use of undefined constant _RIJNDAEL_IV_ - assumed '_RIJNDAEL_IV_' (this will throw an Error in a future version of PHP) in /workspace/prestashop16/classes/Cookie.php on line 79
+[03-Sep-2025 15:20:53 Europe/Rome] PHP Stack trace:
+[03-Sep-2025 15:20:53 Europe/Rome] PHP   1. {main}() /workspace/prestashop16/modules/aerpoints/test_module.php:0
+[03-Sep-2025 15:20:53 Europe/Rome] PHP   2. require_once() /workspace/prestashop16/modules/aerpoints/test_module.php:7
+[03-Sep-2025 15:20:53 Europe/Rome] PHP   3. CookieCore->__construct($name = 'ps-s1', $path = '', $expire = 1758633653, $shared_urls = NULL, $standalone = FALSE, $secure = TRUE) /workspace/prestashop16/config/config.inc.php:174
+[03-Sep-2025 15:21:07 Europe/Rome] PHP Warning:  Use of undefined constant _RIJNDAEL_KEY_ - assumed '_RIJNDAEL_KEY_' (this will throw an Error in a future version of PHP) in /workspace/prestashop16/classes/Cookie.php on line 79
+[03-Sep-2025 15:21:07 Europe/Rome] PHP Stack trace:
+[03-Sep-2025 15:21:07 Europe/Rome] PHP   1. {main}() /workspace/prestashop16/modules/aerpoints/test_module.php:0
+[03-Sep-2025 15:21:07 Europe/Rome] PHP   2. require_once() /workspace/prestashop16/modules/aerpoints/test_module.php:7
+[03-Sep-2025 15:21:07 Europe/Rome] PHP   3. CookieCore->__construct($name = 'ps-s1', $path = '', $expire = 1758633667, $shared_urls = NULL, $standalone = FALSE, $secure = TRUE) /workspace/prestashop16/config/config.inc.php:174
+[03-Sep-2025 15:21:07 Europe/Rome] PHP Warning:  Use of undefined constant _RIJNDAEL_IV_ - assumed '_RIJNDAEL_IV_' (this will throw an Error in a future version of PHP) in /workspace/prestashop16/classes/Cookie.php on line 79
+[03-Sep-2025 15:21:07 Europe/Rome] PHP Stack trace:
+[03-Sep-2025 15:21:07 Europe/Rome] PHP   1. {main}() /workspace/prestashop16/modules/aerpoints/test_module.php:0
+[03-Sep-2025 15:21:07 Europe/Rome] PHP   2. require_once() /workspace/prestashop16/modules/aerpoints/test_module.php:7
+[03-Sep-2025 15:21:07 Europe/Rome] PHP   3. CookieCore->__construct($name = 'ps-s1', $path = '', $expire = 1758633667, $shared_urls = NULL, $standalone = FALSE, $secure = TRUE) /workspace/prestashop16/config/config.inc.php:174

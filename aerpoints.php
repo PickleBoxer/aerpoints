@@ -75,6 +75,8 @@ class Aerpoints extends Module
             $this->registerHook('displayCustomerAccount') &&
             $this->registerHook('displayAdminProductsExtra') &&
             $this->registerHook('actionProductUpdate') &&
+            $this->registerHook('displayAdminOrder') &&
+            $this->registerHook('displayAdminCustomers') &&
             $this->installTab();
     }
 
@@ -470,6 +472,66 @@ class Aerpoints extends Module
             // Remove points configuration if both values are 0
             AerpointsProduct::deleteProductPoints($id_product);
         }
+    }
+
+    /**
+     * Hook: displayAdminOrder
+     * Show points information in admin order detail page
+     */
+    public function hookDisplayAdminOrder($params)
+    {
+        if (!Configuration::get('AERPOINTS_ENABLED')) {
+            return;
+        }
+
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsHistory.php');
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsPending.php');
+
+        $order = new Order($params['id_order']);
+        
+        // Get points history for this order
+        $order_history = AerpointsHistory::getOrderHistory($order->id);
+        
+        // Get pending points for this order
+        $pending_points = AerpointsPending::getOrderPending($order->id);
+
+        $this->context->smarty->assign(array(
+            'order_history' => $order_history,
+            'pending_points' => $pending_points,
+            'order_id' => $order->id,
+        ));
+
+        return $this->display(__FILE__, 'views/templates/admin/order_points.tpl');
+    }
+
+    /**
+     * Hook: displayAdminCustomers
+     * Show points information in admin customer detail page
+     */
+    public function hookDisplayAdminCustomers($params)
+    {
+        if (!Configuration::get('AERPOINTS_ENABLED')) {
+            return;
+        }
+
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsHistory.php');
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsCustomer.php');
+
+        $customer = new Customer($params['id_customer']);
+        
+        // Get customer points balance
+        $customer_points = AerpointsCustomer::getPointBalance($customer->id);
+        
+        // Get customer points history
+        $customer_history = AerpointsHistory::getCustomerHistory($customer->id, 10); // Last 10 transactions
+
+        $this->context->smarty->assign(array(
+            'customer_points' => $customer_points,
+            'customer_history' => $customer_history,
+            'customer_id' => $customer->id,
+        ));
+
+        return $this->display(__FILE__, 'views/templates/admin/customer_points.tpl');
     }
 
     /**

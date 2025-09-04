@@ -8,6 +8,8 @@ A minimal and simple product-based loyalty points system for PrestaShop 1.6 that
 - **Customer points management**: Track customer points balance and history
 - **Point redemption**: Customers can redeem points for discounts during checkout
 - **Admin configuration**: Easy-to-use admin interface for managing points settings
+- **Admin order integration**: View points earned/redeemed for each order in admin order details
+- **Admin customer management**: View customer points balance and transaction history in customer details
 - **Customer account integration**: "My Points" page accessible from customer account
 - **Order integration**: Points earned/redeemed automatically with order processing
 - **Minimal and clean**: Simple codebase designed for PHP 7.4 compatibility
@@ -51,7 +53,9 @@ aerpoints/
 └── views/                          # Templates and assets
     ├── templates/admin/
     │   ├── configure.tpl           # Admin configuration page
-    │   └── product_points.tpl      # Product edit page points configuration
+    │   ├── product_points.tpl      # Product edit page points configuration
+    │   ├── order_points.tpl        # Admin order points display
+    │   └── customer_points.tpl     # Admin customer points display
     ├── templates/hook/
     │   ├── product_points.tpl      # Product points display
     │   ├── customer_account.tpl    # Customer account link
@@ -96,6 +100,23 @@ INSERT INTO ps_aerpoints_product (id_product, points_earn, points_buy, date_add,
 VALUES (1, 10, 50, NOW(), NOW());
 ```
 
+## Admin Management
+
+### Order Points Information
+When viewing order details in the admin panel:
+- **Points Information Panel**: Shows all points transactions related to the order
+- **Pending Points**: Displays any pending points awaiting order completion
+- **Transaction History**: Complete breakdown of points earned/redeemed for the order
+- **Customer Details**: Links to customer information and full points history
+
+### Customer Points Management
+When viewing customer details in the admin panel:
+- **Current Balance**: Display of customer's total available points
+- **Quick Actions**: Manual point adjustment tools (add/remove points)
+- **Recent Transactions**: Last 10 points transactions for quick overview
+- **Full History Link**: Access to complete customer points history
+- **Estimated Value**: Shows monetary equivalent of customer's points
+
 ## Customer Experience
 
 ### Earning Points
@@ -130,6 +151,8 @@ VALUES (1, 10, 50, NOW(), NOW());
 - `displayShoppingCartFooter`: Show redemption options in cart
 - `displayCustomerAccount`: Add "My Points" link to account menu
 - `displayAdminProductsExtra`: Add points configuration section to product edit page
+- `displayAdminOrder`: Show points information in admin order detail page
+- `displayAdminCustomers`: Show customer points summary and transactions in admin
 - `displayBackOfficeHeader`: Load admin CSS/JS
 - `header`: Load frontend CSS/JS
 

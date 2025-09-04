@@ -150,10 +150,11 @@ class AerpointsHistory extends ObjectModel
      */
     public static function getOrderHistory($id_order)
     {
-        $sql = 'SELECT * 
-                FROM ' . _DB_PREFIX_ . 'aerpoints_history 
-                WHERE id_order = ' . (int)$id_order . '
-                ORDER BY date_add ASC';
+        $sql = 'SELECT h.*, c.firstname, c.lastname
+                FROM ' . _DB_PREFIX_ . 'aerpoints_history h
+                LEFT JOIN ' . _DB_PREFIX_ . 'customer c ON (h.id_customer = c.id_customer)
+                WHERE (h.id_order = ' . (int)$id_order . ')
+                ORDER BY h.date_add DESC';
         
         return Db::getInstance()->executeS($sql);
     }

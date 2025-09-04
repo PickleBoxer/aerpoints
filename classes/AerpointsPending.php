@@ -234,4 +234,17 @@ class AerpointsPending extends ObjectModel
         
         return Db::getInstance()->executeS($sql);
     }
+
+    /**
+     * Get pending points for a specific order
+     */
+    public static function getOrderPending($id_order)
+    {
+        $sql = 'SELECT * 
+                FROM ' . _DB_PREFIX_ . 'aerpoints_pending 
+                WHERE id_order = ' . (int)$id_order . '
+                ORDER BY date_add DESC';
+        
+        return Db::getInstance()->executeS($sql);
+    }
 }
