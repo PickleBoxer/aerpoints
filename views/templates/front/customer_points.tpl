@@ -121,12 +121,14 @@
                                     {if $entry.type == 'earned'}{l s='Earned' mod='aerpoints'}
                                     {elseif $entry.type == 'redeemed'}{l s='Redeemed' mod='aerpoints'}
                                     {elseif $entry.type == 'expired'}{l s='Expired' mod='aerpoints'}
+                                    {elseif $entry.type == 'manual_remove'}{l s='Redeemed' mod='aerpoints'}
+                                    {elseif $entry.type == 'manual_add'}{l s='Earned' mod='aerpoints'}
                                     {else}{l s='Adjusted' mod='aerpoints'}
                                     {/if}
                                 </span>
                             </td>
                             <td>
-                                <span class="{if $entry.points > 0}-text-success{else}text-danger{/if}">
+                                <span class="{if $entry.points > 0}-text-success{else}-text-danger{/if}">
                                     {if $entry.points > 0}+{/if}{$entry.points}
                                 </span>
                             </td>

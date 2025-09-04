@@ -28,6 +28,12 @@ if (! defined('_PS_VERSION_')) {
     exit;
 }
 
+include_once(_PS_CLASS_DIR_.'Order.php');
+include_once(_PS_CLASS_DIR_.'Configuration.php');
+include_once(_PS_CLASS_DIR_.'Customer.php');
+include_once(_PS_CLASS_DIR_.'Tab.php');
+include_once(_PS_CLASS_DIR_.'Language.php');
+
 class Aerpoints extends Module
 {
     protected $config_form = false;
@@ -295,7 +301,7 @@ class Aerpoints extends Module
             $total_points_redeemed = (int) $this->context->cookie->aerpoints_redeem;
 
             // Deduct points from customer immediately
-            AerpointsCustomer::removeCustomerPoints($order->id_customer, $total_points_redeemed);
+            AerpointsCustomer::removePoints($order->id_customer, $total_points_redeemed, AerpointsHistory::TYPE_REDEEMED);
 
             // Add history entry
             AerpointsHistory::addHistoryEntry(
@@ -323,7 +329,7 @@ class Aerpoints extends Module
 
     /**
      * Hook: actionOrderStatusPostUpdate
-     * Called when order status changes - process pending points
+     * Called when order status changes - process pending points or refunds
      */
     public function hookActionOrderStatusPostUpdate($params)
     {
@@ -332,6 +338,8 @@ class Aerpoints extends Module
         }
 
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsPending.php');
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsCustomer.php');
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsHistory.php');
 
         $order = new Order($params['id_order']);
         $new_status = $params['newOrderStatus'];
@@ -343,6 +351,30 @@ class Aerpoints extends Module
         // Check if order is cancelled
         elseif ($new_status->id == Configuration::get('PS_OS_CANCELED')) {
             AerpointsPending::cancelPendingPoints($order->id);
+        }
+        // Check if order is refunded
+        elseif ($new_status->id == Configuration::get('PS_OS_REFUND')) {
+            // Remove points from customer
+            $customer_id = $order->id_customer;
+            $order_history = AerpointsHistory::getOrderHistory($order->id);
+            $points = 0;
+            $description = 'Points removed due to refund for order #'.$order->id;
+            if (is_array($order_history)) {
+                foreach ($order_history as $entry) {
+                    if (isset($entry['points'])) {
+                        $points += (int)$entry['points'];
+                    }
+                }
+            }
+            if ($points > 0) {
+                AerpointsCustomer::removePoints($customer_id, $points, AerpointsHistory::TYPE_REFUND, $description, $order->id);
+                /*AerpointsHistory::addHistoryEntry(
+                    $customer_id,
+                    -$points,
+                    AerpointsHistory::TYPE_REFUND,
+                    'Points removed due to refund for order #'.$order->id
+                );*/
+            }
         }
     }
 

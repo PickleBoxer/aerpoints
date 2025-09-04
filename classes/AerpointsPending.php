@@ -155,6 +155,7 @@ class AerpointsPending extends ObjectModel
             $result = AerpointsCustomer::addPoints(
                 $pending['id_customer'],
                 $pending['points_to_earn'],
+                null,
                 'Points earned from order #' . $id_order,
                 $id_order
             );
@@ -191,6 +192,7 @@ class AerpointsPending extends ObjectModel
             $result = AerpointsCustomer::addPoints(
                 $pending['id_customer'],
                 $pending['points_redeemed'],
+                null,
                 'Points refunded from cancelled order #' . $id_order,
                 $id_order
             );

@@ -21,9 +21,9 @@
         
         <div class="row">
             <div class="col-md-6">
-                <div class="panel panel-default">
+                <div class="panel">
                     <div class="panel-heading">
-                        <h4 class="panel-title">{l s='Current Balance' mod='aerpoints'}</h4>
+                        {l s='Current Balance' mod='aerpoints'}
                     </div>
                     <div class="panel-body text-center">
                         <h2 class="text-success">
@@ -39,15 +39,15 @@
             </div>
             
             <div class="col-md-6">
-                <div class="panel panel-default">
+                <div class="panel">
                     <div class="panel-heading">
-                        <h4 class="panel-title">{l s='Quick Actions' mod='aerpoints'}</h4>
+                        {l s='Quick Actions' mod='aerpoints'}
                     </div>
                     <div class="panel-body">
                         <div class="form-group">
                             <label>{l s='Manual Adjustment:' mod='aerpoints'}</label>
                             <div class="input-group">
-                                <input type="number" id="manual_points" class="form-control" placeholder="Points" style="width: 100px;">
+                                <input type="number" id="manual_points" class="form-control" placeholder="Points">
                                 <span class="input-group-btn">
                                     <button type="button" class="btn btn-success" onclick="adjustPoints({$customer_id}, 'add')">
                                         <i class="icon-plus"></i> {l s='Add' mod='aerpoints'}
