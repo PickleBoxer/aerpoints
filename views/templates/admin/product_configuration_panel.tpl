@@ -12,14 +12,13 @@
         <form method="post" action="{$current}&amp;token={$token}">
             <div class="form-group">
                 <label for="id_product">{l s='Product' mod='aerpoints'}</label>
-                <select id="id_product" name="id_product" class="form-control" required>
-                    <option value="">{l s='Select a product...' mod='aerpoints'}</option>
-                    {if isset($products)}
-                        {foreach from=$products item=product}
-                            <option value="{$product.id_product}">{$product.name}</option>
-                        {/foreach}
-                    {/if}
-                </select>
+                    <select id="id_product" name="id_product[]" class="form-control" multiple required>
+                        {if isset($products)}
+                            {foreach from=$products item=product}
+                                <option value="{$product.id_product}">{$product.name}</option>
+                            {/foreach}
+                        {/if}
+                    </select>
             </div>
             <div class="row">
                 <div class="col-md-6">

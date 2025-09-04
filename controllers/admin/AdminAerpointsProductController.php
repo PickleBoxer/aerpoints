@@ -165,17 +165,13 @@ class AdminAerpointsProductController extends ModuleAdminController
     public function postProcess()
     {
         if (Tools::isSubmit('submitAdd'.$this->table)) {
-            // Try to get id_product from POST, fallback to object if editing
-            $id_product = (int) Tools::getValue('id_product');
+            $id_products = Tools::getValue('id_product');
             $points_earn = (int) Tools::getValue('points_earn');
             $points_buy = (int) Tools::getValue('points_buy');
 
-            // If editing and id_product is missing (input disabled), get from object
-            if (! $id_product && Tools::getValue('id_aerpoints_product')) {
-                $obj = $this->loadObject(true);
-                if ($obj && isset($obj->id_product)) {
-                    $id_product = (int) $obj->id_product;
-                }
+            if (!is_array($id_products) || empty($id_products)) {
+                $this->errors[] = Tools::displayError($this->l('Please select at least one product.'));
+                return false;
             }
 
             if ($points_earn < 0 || $points_buy < 0) {
@@ -188,25 +184,29 @@ class AdminAerpointsProductController extends ModuleAdminController
                 return false;
             }
 
-            if (! Product::existsInDatabase($id_product, 'product')) {
-                $this->errors[] = Tools::displayError($this->l('Invalid product selected'));
-                return false;
+            $success_count = 0;
+            $error_count = 0;
+            foreach ($id_products as $id_product) {
+                $id_product = (int)$id_product;
+                if (!Product::existsInDatabase($id_product, 'product')) {
+                    $this->errors[] = Tools::displayError(sprintf($this->l('Invalid product selected: %d'), $id_product));
+                    $error_count++;
+                    continue;
+                }
+                $existing = AerpointsProduct::getProductPoints($id_product);
+                if ($existing) {
+                    $this->errors[] = Tools::displayError(sprintf($this->l('Product %d already has points configuration. Please edit the existing entry.'), $id_product));
+                    $error_count++;
+                    continue;
+                }
+                AerpointsProduct::setProductPoints($id_product, $points_earn, $points_buy);
+                $success_count++;
             }
-
-            // Check if product already has points configuration
-            $existing = AerpointsProduct::getProductPoints($id_product);
-
-            if ($existing && ! Tools::getValue('id_aerpoints_product')) {
-                $this->errors[] = Tools::displayError($this->l('This product already has points configuration. Please edit the existing entry.'));
-                return false;
+            if ($success_count) {
+                $this->confirmations[] = sprintf($this->l('%d product(s) points configuration saved successfully'), $success_count);
             }
-
-            AerpointsProduct::setProductPoints($id_product, $points_earn, $points_buy);
-
-            $this->confirmations[] = $this->l('Product points configuration saved successfully');
             return true;
         }
-
         return parent::postProcess();
     }
 
