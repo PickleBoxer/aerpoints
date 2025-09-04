@@ -186,6 +186,8 @@ class AdminAerpointsProductController extends ModuleAdminController
 
             $success_count = 0;
             $error_count = 0;
+            $updated_count = 0;
+            $created_count = 0;
             foreach ($id_products as $id_product) {
                 $id_product = (int)$id_product;
                 if (!Product::existsInDatabase($id_product, 'product')) {
@@ -195,15 +197,20 @@ class AdminAerpointsProductController extends ModuleAdminController
                 }
                 $existing = AerpointsProduct::getProductPoints($id_product);
                 if ($existing) {
-                    $this->errors[] = Tools::displayError(sprintf($this->l('Product %d already has points configuration. Please edit the existing entry.'), $id_product));
-                    $error_count++;
-                    continue;
+                    // Update existing configuration
+                    AerpointsProduct::setProductPoints($id_product, $points_earn, $points_buy);
+                    $updated_count++;
+                } else {
+                    // Create new configuration
+                    AerpointsProduct::setProductPoints($id_product, $points_earn, $points_buy);
+                    $created_count++;
                 }
-                AerpointsProduct::setProductPoints($id_product, $points_earn, $points_buy);
-                $success_count++;
             }
-            if ($success_count) {
-                $this->confirmations[] = sprintf($this->l('%d product(s) points configuration saved successfully'), $success_count);
+            if ($created_count) {
+                $this->confirmations[] = sprintf($this->l('%d product(s) points configuration created'), $created_count);
+            }
+            if ($updated_count) {
+                $this->confirmations[] = sprintf($this->l('%d product(s) points configuration updated'), $updated_count);
             }
             return true;
         }
