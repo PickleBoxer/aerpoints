@@ -57,6 +57,45 @@
         </div>
     </div>
     
+    {if $pending_points}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{l s='Pending Points' mod='aerpoints'}</h3>
+        </div>
+        <div class="panel-body">
+            <p class="alert alert-info">
+                {l s='These points will be added to your account once your orders are confirmed and paid.' mod='aerpoints'}
+            </p>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>{l s='Order' mod='aerpoints'}</th>
+                            <th>{l s='Points to Earn' mod='aerpoints'}</th>
+                            <th>{l s='Status' mod='aerpoints'}</th>
+                            <th>{l s='Date' mod='aerpoints'}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {foreach from=$pending_points item=pending}
+                        <tr>
+                            <td>#{$pending.id_order}</td>
+                            <td class="-text-success">+{$pending.points_to_earn}</td>
+                            <td>
+                                <span class="label label-warning">
+                                    {l s='Pending' mod='aerpoints'}
+                                </span>
+                            </td>
+                            <td>{dateFormat date=$pending.date_add full=0}</td>
+                        </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {/if}
+    
     {if $points_history}
     <div class="panel panel-default">
         <div class="panel-heading">
@@ -87,7 +126,7 @@
                                 </span>
                             </td>
                             <td>
-                                <span class="{if $entry.points > 0}text-success{else}text-danger{/if}">
+                                <span class="{if $entry.points > 0}-text-success{else}text-danger{/if}">
                                     {if $entry.points > 0}+{/if}{$entry.points}
                                 </span>
                             </td>

@@ -28,6 +28,7 @@ class AerpointsCustomerpointsModuleFrontController extends ModuleFrontController
 
         include_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsCustomer.php');
         include_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsHistory.php');
+        include_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsPending.php');
 
         $customer_id = $this->context->customer->id;
         
@@ -38,9 +39,13 @@ class AerpointsCustomerpointsModuleFrontController extends ModuleFrontController
         // Get points history
         $points_history = AerpointsHistory::getCustomerHistory($customer_id);
 
+        // Get pending points
+        $pending_points = AerpointsPending::getCustomerPendingPoints($customer_id);
+
         $this->context->smarty->assign(array(
             'customer_points' => $customer_points,
             'points_history' => $points_history,
+            'pending_points' => $pending_points,
             'navigationPipe' => Configuration::get('PS_NAVIGATION_PIPE')
         ));
 

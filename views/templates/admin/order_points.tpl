@@ -83,7 +83,7 @@
                                     {/if}
                                 </span>
                             </td>
-                            <td class="text-success">+{$pending.points_earn}</td>
+                            <td class="text-success">+{$pending.points_to_earn}</td>
                             <td class="text-danger">{if $pending.points_redeemed > 0}-{$pending.points_redeemed}{else}0{/if}</td>
                             <td>{dateFormat date=$pending.date_add full=0}</td>
                         </tr>

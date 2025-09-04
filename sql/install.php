@@ -63,7 +63,8 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'aerpoints_pending` (
     `date_add` datetime NOT NULL,
     `date_upd` datetime NOT NULL,
     PRIMARY KEY (`id_aerpoints_pending`),
-    UNIQUE KEY `id_order` (`id_order`)
+    UNIQUE KEY `id_order` (`id_order`),
+    KEY `id_customer` (`id_customer`)
 ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
 // Points History Table
