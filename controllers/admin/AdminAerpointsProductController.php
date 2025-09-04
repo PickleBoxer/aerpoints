@@ -93,7 +93,11 @@ class AdminAerpointsProductController extends ModuleAdminController
     {
         // Get products for the dropdown
         $products = Product::getProducts($this->context->language->id, 0, 0, 'name', 'ASC');
-        $this->context->smarty->assign('products', $products);
+        $this->context->smarty->assign(array(
+            'products' => $products,
+            'current' => self::$currentIndex,
+            'token' => $this->token
+        ));
         
         return $this->context->smarty->fetch(_PS_MODULE_DIR_.'aerpoints/views/templates/admin/product_configuration_panel.tpl');
     }
