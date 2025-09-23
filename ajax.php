@@ -25,8 +25,22 @@ if (!Context::getContext()->customer->isLogged()) {
     die(json_encode(array('error' => 'Not logged in')));
 }
 
-$action = Tools::getValue('action');
+// Check if module is enabled
+if (! Configuration::get('AERPOINTS_ENABLED')) {
+    die(json_encode(array('error' => 'Module is disabled')));
+}
+
+// Check if customer is allowed to use points system
 $customer_id = Context::getContext()->customer->id;
+$allowed_customers = Configuration::get('AERPOINTS_CUSTOMERS');
+if (! empty($allowed_customers)) {
+    $customer_ids = array_map('trim', explode(',', $allowed_customers));
+    if (! in_array((string)$customer_id, $customer_ids)) {
+        die(json_encode(array('error' => 'Access denied')));
+    }
+}
+
+$action = Tools::getValue('action');
 
 switch ($action) {
     case 'applyPoints':

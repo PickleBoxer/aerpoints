@@ -90,27 +90,3 @@
 		</div>
 	</div>
 </div>
-
-<div class="panel">
-	<h3><i class="icon icon-cogs"></i> {l s='Quick Setup Guide' mod='aerpoints'}</h3>
-	<div class="row">
-		<div class="col-md-4">
-			<div class="alert alert-success text-center">
-				<h4><i class="icon icon-cog"></i> {l s='Step 1' mod='aerpoints'}</h4>
-				<p>{l s='Configure global settings' mod='aerpoints'}</p>
-			</div>
-		</div>
-		<div class="col-md-4">
-			<div class="alert alert-info text-center">
-				<h4><i class="icon icon-shopping-cart"></i> {l s='Step 2' mod='aerpoints'}</h4>
-				<p>{l s='Set points for products' mod='aerpoints'}</p>
-			</div>
-		</div>
-		<div class="col-md-4">
-			<div class="alert alert-warning text-center">
-				<h4><i class="icon icon-users"></i> {l s='Step 3' mod='aerpoints'}</h4>
-				<p>{l s='Monitor customer activity' mod='aerpoints'}</p>
-			</div>
-		</div>
-	</div>
-</div>

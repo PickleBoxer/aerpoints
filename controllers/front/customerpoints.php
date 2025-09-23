@@ -24,6 +24,20 @@ class AerpointsCustomerpointsModuleFrontController extends ModuleFrontController
      */
     public function initContent()
     {
+        // Check if module is enabled
+        if (! Configuration::get('AERPOINTS_ENABLED')) {
+            Tools::redirect('index.php?controller=404');
+        }
+
+        // Check if customer is allowed to use points system
+        $allowed_customers = Configuration::get('AERPOINTS_CUSTOMERS');
+        if (! empty($allowed_customers)) {
+            $customer_ids = array_map('trim', explode(',', $allowed_customers));
+            if (! in_array((string)$this->context->customer->id, $customer_ids)) {
+                Tools::redirect('index.php?controller=404');
+            }
+        }
+
         parent::initContent();
 
         include_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsCustomer.php');

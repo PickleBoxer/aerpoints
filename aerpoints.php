@@ -1,4 +1,6 @@
 <?php
+
+use Prestashop\ModuleLibGuzzleAdapter\Guzzle5\Config;
 /**
  * 2007-2025 PrestaShop
  *
@@ -59,6 +61,7 @@ class Aerpoints extends Module
     public function install()
     {
         Configuration::updateValue('AERPOINTS_ENABLED', 1);
+        Configuration::updateValue('AERPOINTS_CUSTOMERS', '');
         Configuration::updateValue('AERPOINTS_POINT_VALUE', 100);
         Configuration::updateValue('AERPOINTS_MIN_REDEMPTION', 100);
         Configuration::updateValue('AERPOINTS_PARTIAL_PAYMENT', 1);
@@ -83,6 +86,7 @@ class Aerpoints extends Module
     public function uninstall()
     {
         Configuration::deleteByName('AERPOINTS_ENABLED');
+        Configuration::deleteByName('AERPOINTS_CUSTOMERS');
         Configuration::deleteByName('AERPOINTS_POINT_VALUE');
         Configuration::deleteByName('AERPOINTS_MIN_REDEMPTION');
         Configuration::deleteByName('AERPOINTS_PARTIAL_PAYMENT');
@@ -178,6 +182,14 @@ class Aerpoints extends Module
                     array(
                         'col' => 3,
                         'type' => 'text',
+                        'prefix' => '<i class="icon icon-user"></i>',
+                        'desc' => $this->l('Enable module just for specific customers. Leave empty to enable for all customers. Separate customer IDs with comma.'),
+                        'name' => 'AERPOINTS_CUSTOMERS',
+                        'label' => $this->l('Customers'),
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'text',
                         'desc' => $this->l('How many points equal 1 euro (default: 100)'),
                         'name' => 'AERPOINTS_POINT_VALUE',
                         'label' => $this->l('Points per Euro'),
@@ -223,6 +235,7 @@ class Aerpoints extends Module
     {
         return array(
             'AERPOINTS_ENABLED' => (bool) Tools::getValue('AERPOINTS_ENABLED', Configuration::get('AERPOINTS_ENABLED')),
+            'AERPOINTS_CUSTOMERS' => Tools::getValue('AERPOINTS_CUSTOMERS', Configuration::get('AERPOINTS_CUSTOMERS')),
             'AERPOINTS_POINT_VALUE' => (int) Tools::getValue('AERPOINTS_POINT_VALUE', Configuration::get('AERPOINTS_POINT_VALUE')),
             'AERPOINTS_MIN_REDEMPTION' => (int) Tools::getValue('AERPOINTS_MIN_REDEMPTION', Configuration::get('AERPOINTS_MIN_REDEMPTION')),
             'AERPOINTS_PARTIAL_PAYMENT' => (bool) Tools::getValue('AERPOINTS_PARTIAL_PAYMENT', Configuration::get('AERPOINTS_PARTIAL_PAYMENT')),
@@ -239,6 +252,25 @@ class Aerpoints extends Module
         foreach (array_keys($form_values) as $key) {
             Configuration::updateValue($key, Tools::getValue($key));
         }
+    }
+
+    /**
+     * Check if current customer is allowed to use points system
+     * @return bool
+     */
+    private function isCustomerAllowed()
+    {
+        if (! $this->context->customer->isLogged()) {
+            return false;
+        }
+
+        $allowed_customers = Configuration::get('AERPOINTS_CUSTOMERS');
+        if (empty($allowed_customers)) {
+            return true; // If empty, allow all customers
+        }
+
+        $customer_ids = array_map('trim', explode(',', $allowed_customers));
+        return in_array((string)$this->context->customer->id, $customer_ids);
     }
 
     /**
@@ -271,12 +303,23 @@ class Aerpoints extends Module
             return;
         }
 
+        // Check if customer is allowed to use points system
+        $order = $params['order'];
+        $customer_id = $order->id_customer;
+        
+        $allowed_customers = Configuration::get('AERPOINTS_CUSTOMERS');
+        if (! empty($allowed_customers)) {
+            $customer_ids = array_map('trim', explode(',', $allowed_customers));
+            if (! in_array((string)$customer_id, $customer_ids)) {
+                return; // Customer not allowed
+            }
+        }
+
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsPending.php');
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsCustomer.php');
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsHistory.php');
 
-        $order = $params['order'];
         $cart = $params['cart'];
 
         $total_points_to_earn = 0;
@@ -331,11 +374,22 @@ class Aerpoints extends Module
             return;
         }
 
+        // Check if customer is allowed to use points system
+        $order = new Order($params['id_order']);
+        $customer_id = $order->id_customer;
+        
+        $allowed_customers = Configuration::get('AERPOINTS_CUSTOMERS');
+        if (! empty($allowed_customers)) {
+            $customer_ids = array_map('trim', explode(',', $allowed_customers));
+            if (! in_array((string)$customer_id, $customer_ids)) {
+                return; // Customer not allowed
+            }
+        }
+
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsPending.php');
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsCustomer.php');
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsHistory.php');
 
-        $order = new Order($params['id_order']);
         $new_status = $params['newOrderStatus'];
 
         // Check if order is completed (payment accepted)
@@ -382,6 +436,10 @@ class Aerpoints extends Module
             return;
         }
 
+        if (! $this->isCustomerAllowed()) {
+            return;
+        }
+
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
 
         $product = $params['product'];
@@ -412,7 +470,7 @@ class Aerpoints extends Module
             return;
         }
 
-        if (! $this->context->customer->isLogged()) {
+        if (! $this->isCustomerAllowed()) {
             return;
         }
 
@@ -442,6 +500,10 @@ class Aerpoints extends Module
     public function hookDisplayCustomerAccount($params)
     {
         if (! Configuration::get('AERPOINTS_ENABLED')) {
+            return;
+        }
+
+        if (! $this->isCustomerAllowed()) {
             return;
         }
 
