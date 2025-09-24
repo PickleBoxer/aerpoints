@@ -91,15 +91,91 @@ class AdminAerpointsProductController extends ModuleAdminController
      */
     private function renderCombinedCard()
     {
-        // Get products for the dropdown
-        $products = Product::getProducts($this->context->language->id, 0, 0, 'name', 'ASC');
+        // Get categories and manufacturers for filters
+        $categories = Category::getCategories($this->context->language->id, true, false);
+        $manufacturers = Manufacturer::getManufacturers(false, $this->context->language->id);
+        
         $this->context->smarty->assign(array(
-            'products' => $products,
+            'categories' => $categories,
+            'manufacturers' => $manufacturers,
             'current' => self::$currentIndex,
-            'token' => $this->token
+            'token' => $this->token,
+            'ajax_url' => self::$currentIndex . '&ajax=1&action=getFilteredProducts&token=' . $this->token
         ));
         
         return $this->context->smarty->fetch(_PS_MODULE_DIR_.'aerpoints/views/templates/admin/product_configuration_panel.tpl');
+    }
+
+    /**
+     * Handle AJAX requests
+     */
+    public function ajaxProcess()
+    {
+        $action = Tools::getValue('action');
+        
+        switch ($action) {
+            case 'getFilteredProducts':
+                $this->ajaxProcessGetFilteredProducts();
+                break;
+            default:
+                die(Tools::jsonEncode(array('error' => 'Invalid action')));
+        }
+    }
+
+    /**
+     * AJAX: Get filtered products
+     */
+    public function ajaxProcessGetFilteredProducts()
+    {
+        $search = trim(Tools::getValue('search', ''));
+        $category_id = (int)Tools::getValue('category_id', 0);
+        $manufacturer_id = (int)Tools::getValue('manufacturer_id', 0);
+        $limit = (int)Tools::getValue('limit', 50); // Limit results to 50 by default
+        
+        $sql = new DbQuery();
+        $sql->select('p.id_product, pl.name, p.reference, p.price, sa.quantity, m.name as manufacturer_name');
+        $sql->from('product', 'p');
+        $sql->leftJoin('product_lang', 'pl', 'p.id_product = pl.id_product AND pl.id_lang = ' . (int)$this->context->language->id);
+        $sql->leftJoin('stock_available', 'sa', 'p.id_product = sa.id_product AND sa.id_product_attribute = 0');
+        $sql->leftJoin('manufacturer', 'm', 'p.id_manufacturer = m.id_manufacturer');
+        $sql->where('p.active = 1');
+        
+        // Add category filter
+        if ($category_id > 0) {
+            $sql->leftJoin('category_product', 'cp', 'p.id_product = cp.id_product');
+            $sql->where('cp.id_category = ' . $category_id);
+        }
+        
+        // Add manufacturer filter
+        if ($manufacturer_id > 0) {
+            $sql->where('p.id_manufacturer = ' . $manufacturer_id);
+        }
+        
+        // Add search filter
+        if (!empty($search)) {
+            $sql->where('(pl.name LIKE "%' . pSQL($search) . '%" OR p.reference LIKE "%' . pSQL($search) . '%")');
+        }
+        
+        $sql->orderBy('pl.name ASC');
+        $sql->limit($limit);
+        
+        $products = Db::getInstance()->executeS($sql);
+        
+        if (!$products) {
+            $products = array();
+        }
+        
+        // Check which products already have points configured
+        foreach ($products as &$product) {
+            $existing_points = AerpointsProduct::getProductPoints($product['id_product']);
+            $product['has_points'] = $existing_points ? true : false;
+            $product['current_points_earn'] = $existing_points ? $existing_points['points_earn'] : 0;
+            $product['current_points_buy'] = $existing_points ? $existing_points['points_buy'] : 0;
+            $product['price'] = number_format($product['price'], 2);
+            $product['quantity'] = (int)$product['quantity'];
+        }
+        
+        die(Tools::jsonEncode(array('products' => $products)));
     }
 
     public function renderForm()
