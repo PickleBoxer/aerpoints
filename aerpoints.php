@@ -435,7 +435,7 @@ class Aerpoints extends Module
         }
 
         $product_points = AerpointsProduct::getProductPoints($product->id);
-        if (! $product_points || (! $product_points['points_earn'] && ! $product_points['points_buy'])) {
+        if (! $product_points || ! $product_points['points_earn']) {
             return;
         }
 
@@ -553,7 +553,7 @@ class Aerpoints extends Module
         }
 
         // Only process aerpoints data if aerpoints fields are present in the request
-        if (! Tools::isSubmit('aerpoints_earn') && ! Tools::isSubmit('aerpoints_buy')) {
+        if (! Tools::isSubmit('aerpoints_earn')) {
             return;
         }
 
@@ -561,13 +561,12 @@ class Aerpoints extends Module
 
         $id_product = (int) $params['id_product'];
         $points_earn = (int) Tools::getValue('aerpoints_earn');
-        $points_buy = (int) Tools::getValue('aerpoints_buy');
 
-        // Only save if at least one point value is set
-        if ($points_earn > 0 || $points_buy > 0) {
-            AerpointsProduct::setProductPoints($id_product, $points_earn, $points_buy);
+        // Only save if point value is set
+        if ($points_earn > 0) {
+            AerpointsProduct::setProductPoints($id_product, $points_earn);
         } else {
-            // Remove points configuration if both values are 0
+            // Remove points configuration if value is 0
             AerpointsProduct::deleteProductPoints($id_product);
         }
     }

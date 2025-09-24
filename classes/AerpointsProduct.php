@@ -33,7 +33,6 @@ class AerpointsProduct extends ObjectModel
     public $id_aerpoints_product;
     public $id_product;
     public $points_earn;
-    public $points_buy;
     public $active;
     public $date_add;
     public $date_upd;
@@ -47,7 +46,6 @@ class AerpointsProduct extends ObjectModel
         'fields' => array(
             'id_product' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
             'points_earn' => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
-            'points_buy' => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'active' => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'date_add' => array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
             'date_upd' => array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
@@ -70,7 +68,7 @@ class AerpointsProduct extends ObjectModel
     /**
      * Set point configuration for a product
      */
-    public static function setProductPoints($id_product, $points_earn = 0, $points_buy = 0, $active = true)
+    public static function setProductPoints($id_product, $points_earn = 0, $active = true)
     {
         $existing = self::getProductPoints($id_product);
         
@@ -78,7 +76,6 @@ class AerpointsProduct extends ObjectModel
             // Update existing record
             $sql = 'UPDATE ' . _DB_PREFIX_ . 'aerpoints_product 
                     SET points_earn = ' . (int)$points_earn . ',
-                        points_buy = ' . (int)$points_buy . ',
                         active = ' . ($active ? 1 : 0) . ',
                         date_upd = NOW()
                     WHERE id_product = ' . (int)$id_product;
@@ -89,7 +86,6 @@ class AerpointsProduct extends ObjectModel
             $aerpoints_product = new AerpointsProduct();
             $aerpoints_product->id_product = $id_product;
             $aerpoints_product->points_earn = $points_earn;
-            $aerpoints_product->points_buy = $points_buy;
             $aerpoints_product->active = $active;
             $aerpoints_product->date_add = date('Y-m-d H:i:s');
             $aerpoints_product->date_upd = date('Y-m-d H:i:s');
@@ -123,7 +119,7 @@ class AerpointsProduct extends ObjectModel
     public static function hasPoints($id_product)
     {
         $points = self::getProductPoints($id_product);
-        return $points && ($points['points_earn'] > 0 || $points['points_buy'] > 0);
+        return $points && $points['points_earn'] > 0;
     }
 
     /**
@@ -137,18 +133,4 @@ class AerpointsProduct extends ObjectModel
         return Db::getInstance()->execute($sql);
     }
 
-    /**
-     * Get products that can be purchased with points
-     */
-    public static function getProductsPurchasableWithPoints()
-    {
-        $sql = 'SELECT ap.*, p.name, pl.name as product_name, p.price
-                FROM ' . _DB_PREFIX_ . 'aerpoints_product ap
-                LEFT JOIN ' . _DB_PREFIX_ . 'product p ON ap.id_product = p.id_product
-                LEFT JOIN ' . _DB_PREFIX_ . 'product_lang pl ON (p.id_product = pl.id_product AND pl.id_lang = ' . (int)Context::getContext()->language->id . ')
-                WHERE ap.active = 1 AND ap.points_buy > 0
-                ORDER BY ap.points_buy ASC';
-        
-        return Db::getInstance()->executeS($sql);
-    }
 }

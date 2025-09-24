@@ -33,16 +33,5 @@
         </span>
     </div>
     {/if}
-    
-    {if $product_points.points_buy > 0}
-    <div class="aerpoints-buy">
-        <i class="icon-gift"></i>
-        <span class="aerpoints-text">
-            {l s='Buy with' mod='aerpoints'} <strong>{$product_points.points_buy}</strong> {l s='points' mod='aerpoints'}
-            {assign var="discount_value" value=($product_points.points_buy / $point_value)}
-            <small>({l s='≈' mod='aerpoints'} {$discount_value|string_format:"%.2f"}€)</small>
-        </span>
-    </div>
-    {/if}
 </div>
 {/if}

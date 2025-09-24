@@ -47,7 +47,7 @@
             
             <div class="form-group">
                 <label>{l s='Products' mod='aerpoints'}</label>
-                <div class="panel panel-default">
+                <div class="panel panel-default" style="padding: 0;">
                     <div class="panel-body" style="padding: 0;">
                         <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
                             <table class="table table-striped table-hover" id="products-table" style="margin-bottom: 0;">
@@ -90,21 +90,10 @@
                 <!-- Hidden inputs for selected products -->
                 <div id="selected-products-inputs"></div>
             </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="points_earn">{l s='Points Earned' mod='aerpoints'}</label>
-                        <input type="number" id="points_earn" name="points_earn" class="form-control" min="0" placeholder="0" value="0">
-                        <p class="help-block">{l s='Points customer earns when buying this product' mod='aerpoints'}</p>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="points_buy">{l s='Points to Buy' mod='aerpoints'}</label>
-                        <input type="number" id="points_buy" name="points_buy" class="form-control" min="0" placeholder="0" value="0">
-                        <p class="help-block">{l s='Points required to purchase this product (0 = cannot buy with points)' mod='aerpoints'}</p>
-                    </div>
-                </div>
+            <div class="form-group">
+                <label for="points_earn">{l s='Points Earned' mod='aerpoints'}</label>
+                <input type="number" id="points_earn" name="points_earn" class="form-control" min="0" placeholder="0" value="0">
+                <p class="help-block">{l s='Points customer earns when buying this product' mod='aerpoints'}</p>
             </div>
             <input type="hidden" name="submitAddaerpoints_product" value="1" />
             <button type="submit" name="submitAddaerpoints_product" class="btn btn-primary">{l s='Set Points' mod='aerpoints'}</button>
@@ -145,7 +134,7 @@ $(document).ready(function() {
                     $.each(response.products, function(index, product) {
                         var statusBadge = '';
                         if (product.has_points) {
-                            statusBadge = '<span class="label label-success" title="Earn: ' + product.current_points_earn + ' pts | Buy: ' + product.current_points_buy + ' pts">Configured</span>';
+                            statusBadge = '<span class="label label-success" title="Earn: ' + product.current_points_earn + ' pts">Configured</span>';
                         } else {
                             statusBadge = '<span class="label label-default">Not set</span>';
                         }
@@ -292,11 +281,10 @@ $(document).ready(function() {
         }
         
         var pointsEarn = parseInt($('#points_earn').val()) || 0;
-        var pointsBuy = parseInt($('#points_buy').val()) || 0;
         
-        if (pointsEarn === 0 && pointsBuy === 0) {
+        if (pointsEarn === 0) {
             e.preventDefault();
-            alert('{l s='Please enter at least one points value (earn or buy).' mod='aerpoints'}');
+            alert('{l s='Please enter points earned value (greater than 0).' mod='aerpoints'}');
             return false;
         }
     });

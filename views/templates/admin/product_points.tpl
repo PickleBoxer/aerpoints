@@ -19,47 +19,24 @@
     </div>
     <div class="panel-body">
         <p class="help-block">
-            {l s='Configure how many points customers earn and how many points are required to buy this product with points.' mod='aerpoints'}
+            {l s='Configure how many points customers earn when buying this product.' mod='aerpoints'}
         </p>
         
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="control-label">
-                        <i class="icon-plus"></i>
-                        {l s='Points Earned' mod='aerpoints'}
-                    </label>
-                    <input type="number" 
-                           name="aerpoints_earn" 
-                           id="aerpoints_earn"
-                           class="form-control" 
-                           value="{if $product_points}{$product_points.points_earn|intval}{else}0{/if}"
-                           min="0"
-                           placeholder="0">
-                    <p class="help-block">
-                        {l s='Points customer earns when buying this product' mod='aerpoints'}
-                    </p>
-                </div>
-            </div>
-            
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="control-label">
-                        <i class="icon-shopping-cart"></i>
-                        {l s='Points Required to Buy' mod='aerpoints'}
-                    </label>
-                    <input type="number" 
-                           name="aerpoints_buy" 
-                           id="aerpoints_buy"
-                           class="form-control" 
-                           value="{if $product_points}{$product_points.points_buy|intval}{else}0{/if}"
-                           min="0"
-                           placeholder="0">
-                    <p class="help-block">
-                        {l s='Points required to purchase this product (0 = cannot buy with points)' mod='aerpoints'}
-                    </p>
-                </div>
-            </div>
+        <div class="form-group">
+            <label class="control-label">
+                <i class="icon-plus"></i>
+                {l s='Points Earned' mod='aerpoints'}
+            </label>
+            <input type="number" 
+                   name="aerpoints_earn" 
+                   id="aerpoints_earn"
+                   class="form-control" 
+                   value="{if $product_points}{$product_points.points_earn|intval}{else}0{/if}"
+                   min="0"
+                   placeholder="0">
+            <p class="help-block">
+                {l s='Points customer earns when buying this product' mod='aerpoints'}
+            </p>
         </div>
         
         {if $product_points}
@@ -67,14 +44,13 @@
             <p><strong>{l s='Current Configuration:' mod='aerpoints'}</strong></p>
             <ul>
                 <li>{l s='Points Earned:' mod='aerpoints'} <strong>{$product_points.points_earn|intval}</strong></li>
-                <li>{l s='Points to Buy:' mod='aerpoints'} <strong>{$product_points.points_buy|intval}</strong></li>
                 <li>{l s='Last Updated:' mod='aerpoints'} {$product_points.date_upd}</li>
             </ul>
         </div>
         {/if}
         
         <div class="alert alert-warning">
-            <p><strong>{l s='Note:' mod='aerpoints'}</strong> {l s='Set both values to 0 to remove points configuration for this product.' mod='aerpoints'}</p>
+            <p><strong>{l s='Note:' mod='aerpoints'}</strong> {l s='Set value to 0 to remove points configuration for this product.' mod='aerpoints'}</p>
         </div>
     </div>
     <div class="panel-footer">

@@ -41,7 +41,7 @@ class AdminAerpointsProductController extends ModuleAdminController
 
         $this->_select = 'pl.name as product_name';
         $this->_join = 'LEFT JOIN `'._DB_PREFIX_.'product_lang` pl ON (a.`id_product` = pl.`id_product` AND pl.`id_lang` = '.(int) $this->context->language->id.')';
-        $this->_where = 'AND (a.points_earn > 0 OR a.points_buy > 0)';
+        $this->_where = 'AND a.points_earn > 0';
     }
 
     /**
@@ -62,11 +62,6 @@ class AdminAerpointsProductController extends ModuleAdminController
             ),
             'points_earn' => array(
                 'title' => $this->l('Points Earned'),
-                'align' => 'center',
-                'class' => 'fixed-width-sm'
-            ),
-            'points_buy' => array(
-                'title' => $this->l('Points to Buy'),
                 'align' => 'center',
                 'class' => 'fixed-width-sm'
             ),
@@ -170,7 +165,6 @@ class AdminAerpointsProductController extends ModuleAdminController
             $existing_points = AerpointsProduct::getProductPoints($product['id_product']);
             $product['has_points'] = $existing_points ? true : false;
             $product['current_points_earn'] = $existing_points ? $existing_points['points_earn'] : 0;
-            $product['current_points_buy'] = $existing_points ? $existing_points['points_buy'] : 0;
             $product['price'] = number_format($product['price'], 2);
             $product['quantity'] = (int)$product['quantity'];
         }
@@ -207,13 +201,6 @@ class AdminAerpointsProductController extends ModuleAdminController
                     'name' => 'points_earn',
                     'class' => 'fixed-width-sm',
                     'desc' => $this->l('Points customer earns when buying this product')
-                ),
-                array(
-                    'type' => 'text',
-                    'label' => $this->l('Points to Buy'),
-                    'name' => 'points_buy',
-                    'class' => 'fixed-width-sm',
-                    'desc' => $this->l('Points required to purchase this product (0 = cannot buy with points)')
                 )
             ),
             'submit' => array(
@@ -243,20 +230,14 @@ class AdminAerpointsProductController extends ModuleAdminController
         if (Tools::isSubmit('submitAdd'.$this->table)) {
             $id_products = Tools::getValue('id_product');
             $points_earn = (int) Tools::getValue('points_earn');
-            $points_buy = (int) Tools::getValue('points_buy');
 
             if (!is_array($id_products) || empty($id_products)) {
                 $this->errors[] = Tools::displayError($this->l('Please select at least one product.'));
                 return false;
             }
 
-            if ($points_earn < 0 || $points_buy < 0) {
-                $this->errors[] = Tools::displayError($this->l('Points values cannot be negative'));
-                return false;
-            }
-
-            if ($points_earn == 0 && $points_buy == 0) {
-                $this->errors[] = Tools::displayError($this->l('At least one points value must be greater than 0'));
+            if ($points_earn <= 0) {
+                $this->errors[] = Tools::displayError($this->l('Points earned must be greater than 0'));
                 return false;
             }
 
@@ -274,11 +255,11 @@ class AdminAerpointsProductController extends ModuleAdminController
                 $existing = AerpointsProduct::getProductPoints($id_product);
                 if ($existing) {
                     // Update existing configuration
-                    AerpointsProduct::setProductPoints($id_product, $points_earn, $points_buy);
+                    AerpointsProduct::setProductPoints($id_product, $points_earn);
                     $updated_count++;
                 } else {
                     // Create new configuration
-                    AerpointsProduct::setProductPoints($id_product, $points_earn, $points_buy);
+                    AerpointsProduct::setProductPoints($id_product, $points_earn);
                     $created_count++;
                 }
             }

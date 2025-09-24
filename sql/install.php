@@ -44,7 +44,6 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'aerpoints_product` (
     `id_aerpoints_product` int(11) NOT NULL AUTO_INCREMENT,
     `id_product` int(11) NOT NULL,
     `points_earn` int(11) NOT NULL DEFAULT 0,
-    `points_buy` int(11) NOT NULL DEFAULT 0,
     `active` tinyint(1) NOT NULL DEFAULT 1,
     `date_add` datetime NOT NULL,
     `date_upd` datetime NOT NULL,
