@@ -20,7 +20,7 @@
 
 <div class="box">
     <h1 class="page-heading">{l s='My AerPoints' mod='aerpoints'}</h1>
-    
+
     <div class="row">
         <div class="col-md-6">
             <div class="panel panel-default">
@@ -29,17 +29,17 @@
                 </div>
                 <div class="panel-body">
                     <p class="aerpoints-balance">
-                        {l s='Available Points:' mod='aerpoints'} 
+                        {l s='Available Points:' mod='aerpoints'}
                         <strong class="aerpoints-total">{$customer_points}</strong>
                     </p>
                     <p class="aerpoints-value">
-                        {l s='Total Value:' mod='aerpoints'} 
+                        {l s='Total Value:' mod='aerpoints'}
                         <strong>{convertPrice price=$customer_points}</strong>
                     </p>
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-6">
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -50,102 +50,178 @@
                         <li>{l s='Purchase products to earn points' mod='aerpoints'}</li>
                         <li>{l s='Each product has different point values' mod='aerpoints'}</li>
                         <li>{l s='Points are awarded after order confirmation' mod='aerpoints'}</li>
-                        <li>{l s='Use points for discounts on future orders' mod='aerpoints'}</li>
+                        <li>{l s='Redeem points to create discount vouchers' mod='aerpoints'} -
+                            <a href="{$link->getPageLink('discount', true)|escape:'html':'UTF-8'}" class="btn-link">
+                                {l s='View your vouchers' mod='aerpoints'}
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
-    
+
+    {if $customer_points > 0}
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <i class="icon-gift"></i> {l s='Redeem Points' mod='aerpoints'}
+                </h4>
+            </div>
+            <div class="panel-body">
+                <div class="alert alert-info" style="margin: 15px 0; padding: 10px 15px; border-left: 4px solid #17a2b8;">
+                    <i class="icon-info-sign"></i>
+                    <small>{l s='Create a discount voucher for your next order' mod='aerpoints'}</small>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="well well-sm" style="background: #f8f9fa; border: 1px solid #e9ecef;">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <p class="text-muted small" style="margin-bottom: 5px;">
+                                        {l s='Available Points' mod='aerpoints'}</p>
+                                    <h4 class="-text-success" style="margin: 0; font-weight: bold;">{$customer_points}</h4>
+                                </div>
+                                <div class="col-sm-6">
+                                    <p class="text-muted small" style="margin-bottom: 5px;">{l s='Minimum' mod='aerpoints'}
+                                    </p>
+                                    <h5 style="margin: 0; color: #6c757d;">{$min_redemption} {l s='points' mod='aerpoints'}
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form class="form-inline" style="margin-top: 20px;">
+                            <div class="form-group" style="margin-right: 10px;">
+                                <label class="sr-only"
+                                    for="aerpoints_redeem_amount">{l s='Points to redeem' mod='aerpoints'}</label>
+                                <div class="input-group" style="width: 160px;">
+                                    <input type="number" id="aerpoints_redeem_amount" name="aerpoints_redeem_amount"
+                                        class="form-control" min="{$min_redemption}" max="{$customer_points}"
+                                        value="{$min_redemption}" placeholder="{l s='Points' mod='aerpoints'}">
+                                    <span class="input-group-addon">
+                                        <i class="icon-star"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <button type="button" id="aerpoints_apply_btn" class="btn btn-primary btn-sm">
+                                <i class="icon-magic"></i> {l s='Create Voucher' mod='aerpoints'}
+                            </button>
+                        </form>
+
+                        <div style="margin-top: 10px;">
+                            <small class="text-muted">
+                                {$point_value} {l s='points = 1€ discount' mod='aerpoints'} •
+                                <a href="{$link->getPageLink('discount', true)|escape:'html':'UTF-8'}" class="text-primary">
+                                    <i class="icon-ticket"></i> {l s='Manage vouchers' mod='aerpoints'}
+                                </a>
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="text-center" style="padding: 20px 0;">
+                            <i class="icon-gift" style="font-size: 48px; color: #17a2b8; opacity: 0.3;"></i>
+                            <p class="text-muted small" style="margin-top: 10px; line-height: 1.4;">
+                                {l s='Turn your points into instant savings' mod='aerpoints'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {/if}
+
     {if $pending_points}
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h3 class="panel-title">{l s='Pending Points' mod='aerpoints'}</h3>
-        </div>
-        <div class="panel-body">
-            <p class="alert alert-info">
-                {l s='These points will be added to your account once your orders are confirmed and paid.' mod='aerpoints'}
-            </p>
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>{l s='Order' mod='aerpoints'}</th>
-                            <th>{l s='Points to Earn' mod='aerpoints'}</th>
-                            <th>{l s='Status' mod='aerpoints'}</th>
-                            <th>{l s='Date' mod='aerpoints'}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {foreach from=$pending_points item=pending}
-                        <tr>
-                            <td>#{$pending.id_order}</td>
-                            <td class="-text-success">+{$pending.points_to_earn}</td>
-                            <td>
-                                <span class="label label-warning">
-                                    {l s='Pending' mod='aerpoints'}
-                                </span>
-                            </td>
-                            <td>{dateFormat date=$pending.date_add full=0}</td>
-                        </tr>
-                        {/foreach}
-                    </tbody>
-                </table>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">{l s='Pending Points' mod='aerpoints'}</h3>
+            </div>
+            <div class="panel-body">
+                <p class="alert alert-info">
+                    {l s='These points will be added to your account once your orders are confirmed and paid.' mod='aerpoints'}
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>{l s='Order' mod='aerpoints'}</th>
+                                <th>{l s='Points to Earn' mod='aerpoints'}</th>
+                                <th>{l s='Status' mod='aerpoints'}</th>
+                                <th>{l s='Date' mod='aerpoints'}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {foreach from=$pending_points item=pending}
+                                <tr>
+                                    <td>#{$pending.id_order}</td>
+                                    <td class="-text-success">+{$pending.points_to_earn}</td>
+                                    <td>
+                                        <span class="label label-warning">
+                                            {l s='Pending' mod='aerpoints'}
+                                        </span>
+                                    </td>
+                                    <td>{dateFormat date=$pending.date_add full=0}</td>
+                                </tr>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
     {/if}
-    
+
     {if $points_history}
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h3 class="panel-title">{l s='Points History' mod='aerpoints'}</h3>
-        </div>
-        <div class="panel-body">
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>{l s='Date' mod='aerpoints'}</th>
-                            <th>{l s='Type' mod='aerpoints'}</th>
-                            <th>{l s='Points' mod='aerpoints'}</th>
-                            <th>{l s='Description' mod='aerpoints'}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {foreach from=$points_history item=entry}
-                        <tr>
-                            <td>{dateFormat date=$entry.date_add full=0}</td>
-                            <td>
-                                <span class="label label-{if $entry.type == 'earned'}success{elseif $entry.type == 'redeemed'}warning{else}info{/if}">
-                                    {if $entry.type == 'earned'}{l s='Earned' mod='aerpoints'}
-                                    {elseif $entry.type == 'redeemed'}{l s='Redeemed' mod='aerpoints'}
-                                    {elseif $entry.type == 'expired'}{l s='Expired' mod='aerpoints'}
-                                    {elseif $entry.type == 'manual_remove'}{l s='Redeemed' mod='aerpoints'}
-                                    {elseif $entry.type == 'manual_add'}{l s='Earned' mod='aerpoints'}
-                                    {else}{l s='Adjusted' mod='aerpoints'}
-                                    {/if}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="{if $entry.points > 0}-text-success{else}-text-danger{/if}">
-                                    {if $entry.points > 0}+{/if}{$entry.points}
-                                </span>
-                            </td>
-                            <td>{$entry.description}</td>
-                        </tr>
-                        {/foreach}
-                    </tbody>
-                </table>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">{l s='Points History' mod='aerpoints'}</h3>
+            </div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>{l s='Date' mod='aerpoints'}</th>
+                                <th>{l s='Type' mod='aerpoints'}</th>
+                                <th>{l s='Points' mod='aerpoints'}</th>
+                                <th>{l s='Description' mod='aerpoints'}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {foreach from=$points_history item=entry}
+                                <tr>
+                                    <td>{dateFormat date=$entry.date_add full=0}</td>
+                                    <td>
+                                        <span
+                                            class="label label-{if $entry.type == 'earned'}success{elseif $entry.type == 'redeemed'}warning{else}info{/if}">
+                                            {if $entry.type == 'earned'}{l s='Earned' mod='aerpoints'}
+                                            {elseif $entry.type == 'redeemed'}{l s='Redeemed' mod='aerpoints'}
+                                            {elseif $entry.type == 'expired'}{l s='Expired' mod='aerpoints'}
+                                            {elseif $entry.type == 'manual_remove'}{l s='Redeemed' mod='aerpoints'}
+                                            {elseif $entry.type == 'manual_add'}{l s='Earned' mod='aerpoints'}
+                                            {else}{l s='Adjusted' mod='aerpoints'}
+                                            {/if}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="{if $entry.points > 0}-text-success{else}-text-danger{/if}">
+                                            {if $entry.points > 0}+{/if}{$entry.points}
+                                        </span>
+                                    </td>
+                                    <td>{$entry.description}</td>
+                                </tr>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
     {else}
-    <div class="alert alert-info">
-        <p>{l s='No points history available yet. Start shopping to earn your first points!' mod='aerpoints'}</p>
-    </div>
+        <div class="alert alert-info">
+            <p>{l s='No points history available yet. Start shopping to earn your first points!' mod='aerpoints'}</p>
+        </div>
     {/if}
-    
+
     <div class="footer_links clearfix">
         <a href="{$link->getPageLink('my-account', true)|escape:'html':'UTF-8'}" class="btn btn-default">
             <i class="icon-chevron-left"></i>
@@ -153,3 +229,51 @@
         </a>
     </div>
 </div>
+
+<script type="text/javascript">
+    {literal}
+        $(document).ready(function() {
+            var ajaxurl = '{/literal}{$link->getModuleLink('aerpoints', 'customerpoints')}{literal}';
+
+            $('#aerpoints_apply_btn').click(function() {
+                var $btn = $(this);
+                var points = parseInt($('#aerpoints_redeem_amount').val());
+                var minRedemption = {/literal}{$min_redemption}{literal};
+
+                if (points < minRedemption) {
+                    alert('{/literal}{l s='Minimum redemption is' mod='aerpoints'}{literal} ' + minRedemption + ' {/literal}{l s='points' mod='aerpoints'}{literal}');
+                    return;
+                }
+
+                $btn.prop('disabled', true).text('{/literal}{l s='Creating...' mod='aerpoints'}{literal}');
+
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    async: false,
+                    cache: false,
+                    dataType: 'json',
+                    data: {
+                        ajax: true,
+                        action: 'applyPoints',
+                        points: points
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            // Show success message and reload
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                            $btn.prop('disabled', false).text('{/literal}{l s='Create Voucher' mod='aerpoints'}{literal}');
+                        }
+                    },
+                    error: function() {
+                        alert('{/literal}{l s='An error occurred. Please try again.' mod='aerpoints'}{literal}');
+                        $btn.prop('disabled', false).text('{/literal}{l s='Create Voucher' mod='aerpoints'}{literal}');
+                    }
+                });
+            });
+        });
+    {/literal}
+</script>

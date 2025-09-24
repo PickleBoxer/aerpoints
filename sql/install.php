@@ -72,12 +72,14 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'aerpoints_history` (
     `id_aerpoints_history` int(11) NOT NULL AUTO_INCREMENT,
     `id_customer` int(11) NOT NULL,
     `id_order` int(11) DEFAULT NULL,
+    `id_cart_rule` int(11) DEFAULT NULL,
     `points` int(11) NOT NULL,
     `type` varchar(20) NOT NULL,
     `description` varchar(255) DEFAULT NULL,
     `date_add` datetime NOT NULL,
     PRIMARY KEY (`id_aerpoints_history`),
-    KEY `id_customer` (`id_customer`)
+    KEY `id_customer` (`id_customer`),
+    KEY `id_cart_rule` (`id_cart_rule`)
 ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
 foreach ($sql as $query) {

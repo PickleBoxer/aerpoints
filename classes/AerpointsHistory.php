@@ -40,6 +40,7 @@ class AerpointsHistory extends ObjectModel
     public $id_aerpoints_history;
     public $id_customer;
     public $id_order;
+    public $id_cart_rule;
     public $points;
     public $type;
     public $description;
@@ -53,7 +54,8 @@ class AerpointsHistory extends ObjectModel
         'primary' => 'id_aerpoints_history',
         'fields' => array(
             'id_customer' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
-            'id_order' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId'),
+            'id_order' => array('type' => self::TYPE_INT, 'validate' => 'isNullOrUnsignedId'),
+            'id_cart_rule' => array('type' => self::TYPE_INT, 'validate' => 'isNullOrUnsignedId'),
             'points' => array('type' => self::TYPE_INT, 'validate' => 'isInt', 'required' => true),
             'type' => array('type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => true),
             'description' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
@@ -109,7 +111,7 @@ class AerpointsHistory extends ObjectModel
     /**
      * Add history entry
      */
-    public static function addHistoryEntry($id_customer, $points, $type, $description = '', $id_order = null)
+    public static function addHistoryEntry($id_customer, $points, $type, $description = '', $id_order = null, $id_cart_rule = null)
     {
         // Validate type
         if (!in_array($type, self::getValidTypes())) {
@@ -119,6 +121,7 @@ class AerpointsHistory extends ObjectModel
         $history = new AerpointsHistory();
         $history->id_customer = $id_customer;
         $history->id_order = $id_order;
+        $history->id_cart_rule = $id_cart_rule;
         $history->points = $points;
         $history->type = $type;
         $history->description = $description;
@@ -132,17 +135,46 @@ class AerpointsHistory extends ObjectModel
      */
     public static function getCustomerHistory($id_customer, $limit = 50)
     {
-        $sql = 'SELECT h.*, o.reference as order_reference
+        $sql = 'SELECT h.*, o.reference as order_reference, cr.code as cart_rule_code
                 FROM ' . _DB_PREFIX_ . 'aerpoints_history h
                 LEFT JOIN ' . _DB_PREFIX_ . 'orders o ON h.id_order = o.id_order
+                LEFT JOIN ' . _DB_PREFIX_ . 'cart_rule cr ON h.id_cart_rule = cr.id_cart_rule
                 WHERE h.id_customer = ' . (int)$id_customer . '
                 ORDER BY h.date_add DESC';
         
         if ($limit > 0) {
             $sql .= ' LIMIT ' . (int)$limit;
         }
-        
+
         return Db::getInstance()->executeS($sql);
+    }
+
+    /**
+     * Get history entries by cart rule ID
+     */
+    public static function getHistoryByCartRule($id_cart_rule)
+    {
+        $sql = 'SELECT h.*, o.reference as order_reference, cr.code as cart_rule_code
+                FROM ' . _DB_PREFIX_ . 'aerpoints_history h
+                LEFT JOIN ' . _DB_PREFIX_ . 'orders o ON h.id_order = o.id_order
+                LEFT JOIN ' . _DB_PREFIX_ . 'cart_rule cr ON h.id_cart_rule = cr.id_cart_rule
+                WHERE h.id_cart_rule = ' . (int)$id_cart_rule . '
+                ORDER BY h.date_add DESC';
+
+        return Db::getInstance()->executeS($sql);
+    }
+
+    /**
+     * Update order ID for existing cart rule history entry
+     */
+    public static function updateCartRuleOrderId($id_cart_rule, $id_order)
+    {
+        $sql = 'UPDATE ' . _DB_PREFIX_ . 'aerpoints_history 
+                SET id_order = ' . (int)$id_order . '
+                WHERE id_cart_rule = ' . (int)$id_cart_rule . ' 
+                AND (id_order IS NULL OR id_order = 0)';
+        
+        return Db::getInstance()->execute($sql);
     }
 
     /**

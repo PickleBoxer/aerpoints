@@ -270,7 +270,7 @@ class Aerpoints extends Module
         }
 
         $customer_ids = array_map('trim', explode(',', $allowed_customers));
-        return in_array((string)$this->context->customer->id, $customer_ids);
+        return in_array((string) $this->context->customer->id, $customer_ids);
     }
 
     /**
@@ -297,6 +297,10 @@ class Aerpoints extends Module
      * Hook: actionValidateOrder
      * Called when order is validated - create pending points entry
      */
+    /**
+     * Hook: actionValidateOrder
+     * Called when order is validated - create pending points entry
+     */
     public function hookActionValidateOrder($params)
     {
         if (! Configuration::get('AERPOINTS_ENABLED')) {
@@ -306,11 +310,11 @@ class Aerpoints extends Module
         // Check if customer is allowed to use points system
         $order = $params['order'];
         $customer_id = $order->id_customer;
-        
+
         $allowed_customers = Configuration::get('AERPOINTS_CUSTOMERS');
         if (! empty($allowed_customers)) {
             $customer_ids = array_map('trim', explode(',', $allowed_customers));
-            if (! in_array((string)$customer_id, $customer_ids)) {
+            if (! in_array((string) $customer_id, $customer_ids)) {
                 return; // Customer not allowed
             }
         }
@@ -323,7 +327,6 @@ class Aerpoints extends Module
         $cart = $params['cart'];
 
         $total_points_to_earn = 0;
-        $total_points_redeemed = 0;
 
         // Calculate points to earn from products in cart
         foreach ($cart->getProducts() as $product) {
@@ -333,33 +336,13 @@ class Aerpoints extends Module
             }
         }
 
-        // Handle point redemption from session
-        if (isset($this->context->cookie->aerpoints_redeem) && $this->context->cookie->aerpoints_redeem > 0) {
-            $total_points_redeemed = (int) $this->context->cookie->aerpoints_redeem;
-
-            // Deduct points from customer immediately
-            AerpointsCustomer::removePoints($order->id_customer, $total_points_redeemed, AerpointsHistory::TYPE_REDEEMED);
-
-            // Add history entry
-            AerpointsHistory::addHistoryEntry(
-                $order->id_customer,
-                -$total_points_redeemed,
-                AerpointsHistory::TYPE_REDEEMED,
-                'Points redeemed for order #'.$order->id
-            );
-
-            // Clear redemption from session
-            unset($this->context->cookie->aerpoints_redeem);
-            $this->context->cookie->write();
-        }
-
-        // Create pending points entry for earned points
+        // Create pending points entry for earned points only
         if ($total_points_to_earn > 0) {
             AerpointsPending::createPendingEntry(
                 $order->id,
                 $order->id_customer,
                 $total_points_to_earn,
-                0 // Redeemed points are already processed above
+                0 // No redeemed points to track here
             );
         }
     }
@@ -377,11 +360,11 @@ class Aerpoints extends Module
         // Check if customer is allowed to use points system
         $order = new Order($params['id_order']);
         $customer_id = $order->id_customer;
-        
+
         $allowed_customers = Configuration::get('AERPOINTS_CUSTOMERS');
         if (! empty($allowed_customers)) {
             $customer_ids = array_map('trim', explode(',', $allowed_customers));
-            if (! in_array((string)$customer_id, $customer_ids)) {
+            if (! in_array((string) $customer_id, $customer_ids)) {
                 return; // Customer not allowed
             }
         }
@@ -395,6 +378,9 @@ class Aerpoints extends Module
         // Check if order is completed (payment accepted)
         if ($new_status->paid == 1) {
             AerpointsPending::completePendingPoints($order->id);
+
+            // Also log cart rule completion if there were AerPoints redemptions
+            $this->logCartRuleCompletion($order->id);
         }
         // Check if order is cancelled
         elseif ($new_status->id == Configuration::get('PS_OS_CANCELED')) {
@@ -410,7 +396,7 @@ class Aerpoints extends Module
             if (is_array($order_history)) {
                 foreach ($order_history as $entry) {
                     if (isset($entry['points'])) {
-                        $points += (int)$entry['points'];
+                        $points += (int) $entry['points'];
                     }
                 }
             }
@@ -477,17 +463,35 @@ class Aerpoints extends Module
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsCustomer.php');
 
         $customer_id = $this->context->customer->id;
-        //$customer_points = AerpointsCustomer::getCustomerPoints($customer_id);
         $customer_points = AerpointsCustomer::getPointBalance($customer_id);
 
-        // Check if points are being redeemed (from session)
-        $redeemed_points = (int) $this->context->cookie->aerpoints_redeem;
-        $redeemed_discount = $redeemed_points * (Configuration::get('AERPOINTS_POINT_VALUE', 100) / 100);
+        // Check for active AerPoints cart rules in current cart
+        $redeemed_points = 0;
+        $redeemed_discount = 0;
+        $point_value = (int) Configuration::get('AERPOINTS_POINT_VALUE', 100);
+
+        // Check current cart rules for AerPoints redemptions
+        $cart_rules = $this->context->cart->getCartRules();
+        foreach ($cart_rules as $cart_rule) {
+            if (strpos($cart_rule['code'], 'AERPOINTS_') === 0) {
+                // Extract points from cart rule code: AERPOINTS_customerid_points_timestamp
+                preg_match('/AERPOINTS_\d+_(\d+)_\d+/', $cart_rule['code'], $matches);
+                if (isset($matches[1])) {
+                    $redeemed_points = (int) $matches[1];
+                    $redeemed_discount = $cart_rule['value_real'];
+                    break; // Assume only one AerPoints rule per cart
+                }
+            }
+        }
+
+        $min_redemption = (int) Configuration::get('AERPOINTS_MIN_REDEMPTION', 100);
 
         $this->context->smarty->assign(array(
             'customer_points' => $customer_points,
             'redeemed_points' => $redeemed_points,
             'redeemed_discount' => Tools::displayPrice($redeemed_discount),
+            'point_value' => $point_value,
+            'min_redemption' => $min_redemption,
         ));
 
         return $this->display(__FILE__, 'views/templates/hook/cart_redemption.tpl');
@@ -718,6 +722,28 @@ class Aerpoints extends Module
                 'success' => false,
                 'message' => $e->getMessage()
             ));
+        }
+    }
+
+    /**
+     * Log cart rule completion for order
+     */
+    private function logCartRuleCompletion($id_order)
+    {
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsHistory.php');
+
+        // Get order cart rules
+        $order_cart_rules = Db::getInstance()->executeS('
+            SELECT ocr.id_cart_rule 
+            FROM '._DB_PREFIX_.'order_cart_rule ocr
+            WHERE ocr.id_order = '.(int) $id_order);
+
+        foreach ($order_cart_rules as $cart_rule_data) {
+            // Update existing history entry with order ID
+            AerpointsHistory::updateCartRuleOrderId(
+                (int) $cart_rule_data['id_cart_rule'],
+                $id_order
+            );
         }
     }
 }

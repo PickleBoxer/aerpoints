@@ -129,7 +129,7 @@ class AerpointsCustomer extends ObjectModel
     /**
      * Remove points from customer
      */
-    public static function removePoints($id_customer, $points, $type = null, $description = '', $id_order = null)
+    public static function removePoints($id_customer, $points, $type = null, $description = '', $id_order = null, $id_cart_rule = null)
     {
         if ($points <= 0) {
             throw new Exception('Points to remove must be greater than zero.');
@@ -156,7 +156,8 @@ class AerpointsCustomer extends ObjectModel
                 -$points, 
                 $type ?? AerpointsHistory::TYPE_REDEEMED, 
                 $description ?: 'Points redeemed',
-                $id_order
+                $id_order,
+                $id_cart_rule
             );
         }
 
