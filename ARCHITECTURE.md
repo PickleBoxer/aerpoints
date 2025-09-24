@@ -48,7 +48,6 @@ CREATE TABLE IF NOT EXISTS `{prefix}aerpoints_product` (
   `id_aerpoints_product` int(11) NOT NULL AUTO_INCREMENT,
   `id_product` int(11) NOT NULL,
   `points_earn` int(11) NOT NULL DEFAULT 0,
-  `points_buy` int(11) NOT NULL DEFAULT 0,
   `active` tinyint(1) NOT NULL DEFAULT 1,
   `date_add` datetime NOT NULL,
   `date_upd` datetime NOT NULL,
@@ -59,7 +58,6 @@ CREATE TABLE IF NOT EXISTS `{prefix}aerpoints_product` (
 
 **Fields:**
 - `points_earn`: Points customer earns when purchasing this product
-- `points_buy`: Points required to purchase this product (0 = not purchasable with points)
 - `active`: Whether points system is active for this product
 
 ### 3. Pending Points (`ps_aerpoints_pending`)
@@ -306,7 +304,6 @@ Manages point transaction history:
 
 ### Product Page
 - Under product price: "🏆 Earn 50 points with this purchase"
-- If purchasable with points: "💰 Buy with 500 points"
 - Only shown for products with configured points
 
 ### Shopping Cart

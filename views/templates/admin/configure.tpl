@@ -61,9 +61,9 @@
 	<h3><i class="icon icon-edit"></i> {l s='Product Points Management' mod='aerpoints'}</h3>
 	<div class="row">
 		<div class="col-md-6">
-			<div class="panel panel-default">
+			<div class="panel">
 				<div class="panel-heading">
-					<h4 class="panel-title">{l s='Individual Product Setup' mod='aerpoints'}</h4>
+					{l s='Individual Product Setup' mod='aerpoints'}
 				</div>
 				<div class="panel-body">
 					<p>{l s='Configure points for individual products directly in the product edit page.' mod='aerpoints'}</p>
@@ -75,9 +75,9 @@
 			</div>
 		</div>
 		<div class="col-md-6">
-			<div class="panel panel-default">
+			<div class="panel">
 				<div class="panel-heading">
-					<h4 class="panel-title">{l s='Bulk Points Management' mod='aerpoints'}</h4>
+					{l s='Bulk Points Management' mod='aerpoints'}
 				</div>
 				<div class="panel-body">
 					<p>{l s='View and edit all products with points configuration in one place.' mod='aerpoints'}</p>

@@ -18,6 +18,12 @@
     <span class="navigation_page">{l s='My Points' mod='aerpoints'}</span>
 {/capture}
 
+<style>
+    .panel-heading:after {
+        display: none;
+    }
+</style>
+
 <div class="box">
     <h1 class="page-heading">{l s='My AerPoints' mod='aerpoints'}</h1>
 
@@ -33,8 +39,8 @@
                         <strong class="aerpoints-total">{$customer_points}</strong>
                     </p>
                     <p class="aerpoints-value">
-                        {l s='Total Value:' mod='aerpoints'}
-                        <strong>{convertPrice price=$customer_points}</strong>
+                        {l s='Estimated Value:' mod='aerpoints'}
+                        <strong>{convertPrice price=$customer_points / $point_value}</strong>
                     </p>
                 </div>
             </div>
@@ -216,37 +222,40 @@
                         </tbody>
                     </table>
                 </div>
-                
+
                 {if $has_pagination}
-                <div class="text-center" style="margin-top: 15px;">
-                    <ul class="pagination pagination-sm">
-                        {if $current_page > 1}
-                            <li>
-                                <a href="{$link->getModuleLink('aerpoints', 'customerpoints', ['page' => ($current_page-1)])|escape:'html':'UTF-8'}" title="{l s='Previous' mod='aerpoints'}">
-                                    <i class="icon-angle-left"></i>
-                                </a>
-                            </li>
-                        {/if}
-                        
-                        {for $i=1 to $total_pages}
-                            {if $i == $current_page}
-                                <li class="active"><span>{$i}</span></li>
-                            {else}
+                    <div class="text-center" style="margin-top: 15px;">
+                        <ul class="pagination pagination-sm">
+                            {if $current_page > 1}
                                 <li>
-                                    <a href="{$link->getModuleLink('aerpoints', 'customerpoints', ['page' => $i])|escape:'html':'UTF-8'}">{$i}</a>
+                                    <a href="{$link->getModuleLink('aerpoints', 'customerpoints', ['page' => ($current_page-1)])|escape:'html':'UTF-8'}"
+                                        title="{l s='Previous' mod='aerpoints'}">
+                                        <i class="icon-angle-left"></i>
+                                    </a>
                                 </li>
                             {/if}
-                        {/for}
-                        
-                        {if $current_page < $total_pages}
-                            <li>
-                                <a href="{$link->getModuleLink('aerpoints', 'customerpoints', ['page' => ($current_page+1)])|escape:'html':'UTF-8'}" title="{l s='Next' mod='aerpoints'}">
-                                    <i class="icon-angle-right"></i>
-                                </a>
-                            </li>
-                        {/if}
-                    </ul>
-                </div>
+
+                            {for $i=1 to $total_pages}
+                                {if $i == $current_page}
+                                    <li class="active"><span>{$i}</span></li>
+                                {else}
+                                    <li>
+                                        <a
+                                            href="{$link->getModuleLink('aerpoints', 'customerpoints', ['page' => $i])|escape:'html':'UTF-8'}">{$i}</a>
+                                    </li>
+                                {/if}
+                            {/for}
+
+                            {if $current_page < $total_pages}
+                                <li>
+                                    <a href="{$link->getModuleLink('aerpoints', 'customerpoints', ['page' => ($current_page+1)])|escape:'html':'UTF-8'}"
+                                        title="{l s='Next' mod='aerpoints'}">
+                                        <i class="icon-angle-right"></i>
+                                    </a>
+                                </li>
+                            {/if}
+                        </ul>
+                    </div>
                 {/if}
             </div>
         </div>

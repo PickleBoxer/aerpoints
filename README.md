@@ -72,6 +72,7 @@ aerpoints/
 After installation, configure the module in Admin Panel > Modules > AerPoints:
 
 - **Enable/Disable Module**: Turn the points system on/off
+- **Customers**: Enable points for specific customers
 - **Point Value**: How much 1 point is worth in currency (default: 1.00)
 - **Minimum Redemption**: Minimum points required for redemption (default: 100)
 - **Allow Partial Payment**: Whether points can be used for partial order payment
@@ -153,6 +154,7 @@ When viewing customer details in the admin panel:
 - `displayAdminProductsExtra`: Add points configuration section to product edit page
 - `displayAdminOrder`: Show points information in admin order detail page
 - `displayAdminCustomers`: Show customer points summary and transactions in admin
+- `actionAdminProductsListingFieldsModifier`: Add points columns to product list
 - `displayBackOfficeHeader`: Load admin CSS/JS
 - `header`: Load frontend CSS/JS
 
