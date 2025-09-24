@@ -109,6 +109,8 @@
                             </button>
                         </form>
 
+                        <div id="aerpoints_message" style="display: none; margin-top: 10px;"></div>
+
                         <div style="margin-top: 10px;">
                             <small class="text-muted">
                                 {$point_value} {l s='points = 1€ discount' mod='aerpoints'} •
@@ -269,15 +271,21 @@
 
             $('#aerpoints_apply_btn').click(function() {
                 var $btn = $(this);
+                var $message = $('#aerpoints_message');
                 var points = parseInt($('#aerpoints_redeem_amount').val());
                 var minRedemption = {/literal}{$min_redemption}{literal};
 
+                // Hide previous messages
+                $message.hide().removeClass('alert-danger alert-success');
+
                 if (points < minRedemption) {
-                    alert('{/literal}{l s='Minimum redemption is' mod='aerpoints'}{literal} ' + minRedemption + ' {/literal}{l s='points' mod='aerpoints'}{literal}');
+                    $message.addClass('alert alert-danger')
+                        .html('<i class="icon-warning-sign"></i> {/literal}{l s='Minimum redemption is' mod='aerpoints'}{literal} ' + minRedemption + ' {/literal}{l s='points' mod='aerpoints'}{literal}')
+                        .show();
                     return;
                 }
 
-                $btn.prop('disabled', true).text('{/literal}{l s='Creating...' mod='aerpoints'}{literal}');
+                $btn.prop('disabled', true).html('<i class="icon-spinner icon-spin"></i> {/literal}{l s='Creating...' mod='aerpoints'}{literal}');
 
                 $.ajax({
                     url: ajaxurl,
@@ -292,17 +300,24 @@
                     },
                     success: function(response) {
                         if (response.status === 'success') {
-                            // Show success message and reload
-                            alert(response.message);
-                            location.reload();
+                            $message.addClass('alert alert-success')
+                                .html('<i class="icon-check"></i> ' + response.message)
+                                .show();
+                            setTimeout(function() {
+                                location.reload();
+                            }, 2000);
                         } else {
-                            alert(response.message);
-                            $btn.prop('disabled', false).text('{/literal}{l s='Create Voucher' mod='aerpoints'}{literal}');
+                            $message.addClass('alert alert-danger')
+                                .html('<i class="icon-warning-sign"></i> ' + response.message)
+                                .show();
+                            $btn.prop('disabled', false).html('<i class="icon-magic"></i> {/literal}{l s='Create Voucher' mod='aerpoints'}{literal}');
                         }
                     },
                     error: function() {
-                        alert('{/literal}{l s='An error occurred. Please try again.' mod='aerpoints'}{literal}');
-                        $btn.prop('disabled', false).text('{/literal}{l s='Create Voucher' mod='aerpoints'}{literal}');
+                        $message.addClass('alert alert-danger')
+                            .html('<i class="icon-warning-sign"></i> {/literal}{l s='An error occurred. Please try again.' mod='aerpoints'}{literal}')
+                            .show();
+                        $btn.prop('disabled', false).html('<i class="icon-magic"></i> {/literal}{l s='Create Voucher' mod='aerpoints'}{literal}');
                     }
                 });
             });
