@@ -80,6 +80,7 @@ class Aerpoints extends Module
             $this->registerHook('actionProductUpdate') &&
             $this->registerHook('displayAdminOrder') &&
             $this->registerHook('displayAdminCustomers') &&
+            $this->registerHook('actionAdminProductsListingFieldsModifier') &&
             $this->installTab();
     }
 
@@ -564,6 +565,39 @@ class Aerpoints extends Module
             // Remove points configuration if both values are 0
             AerpointsProduct::deleteProductPoints($id_product);
         }
+    }
+
+    /**
+     * Hook: actionAdminProductsListingFieldsModifier
+     * Add points earned column to admin products list
+     */
+    public function hookActionAdminProductsListingFieldsModifier($params)
+    {
+        if (!Configuration::get('AERPOINTS_ENABLED')) {
+            return;
+        }
+
+        // Add points_earned field to the listing
+        $params['select'] .= ', COALESCE(ap.points_earn, 0) as points_earned';
+        $params['join'] .= ' LEFT JOIN `'._DB_PREFIX_.'aerpoints_product` ap ON (a.`id_product` = ap.`id_product` AND ap.`active` = 1)';
+
+        // Add the field to the fields list for display
+        $params['fields']['points_earned'] = array(
+            'title' => $this->l('Points Earned'),
+            'align' => 'text-center',
+            'class' => 'fixed-width-xs',
+            'callback' => 'formatPointsEarned',
+            'callback_object' => $this
+        );
+    }
+
+    /**
+     * Callback to format points earned display
+     */
+    public function formatPointsEarned($value, $row)
+    {
+        $points = (int)$value;
+        return $points > 0 ? $points . ' ★' : '-';
     }
 
     /**
