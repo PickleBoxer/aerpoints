@@ -54,8 +54,16 @@ class AerpointsCustomerpointsModuleFrontController extends ModuleFrontController
         // Get customer points
         $customer_points = AerpointsCustomer::getPointBalance($customer_id);
         
-        // Get points history
-        $points_history = AerpointsHistory::getCustomerHistory($customer_id);
+        // Get points history with pagination
+        $page = (int) Tools::getValue('page', 1);
+        $limit = 10;
+        $points_history = AerpointsHistory::getCustomerHistory($customer_id, $limit * 5); // Get more entries to handle pagination
+        
+        // Simple pagination - slice the results
+        $offset = ($page - 1) * $limit;
+        $total_history = count($points_history);
+        $points_history = array_slice($points_history, $offset, $limit);
+        $total_pages = ceil($total_history / $limit);
 
         // Get pending points
         $pending_points = AerpointsPending::getCustomerPendingPoints($customer_id);
@@ -71,6 +79,10 @@ class AerpointsCustomerpointsModuleFrontController extends ModuleFrontController
             'navigationPipe' => Configuration::get('PS_NAVIGATION_PIPE'),
             'point_value' => $point_value,
             'min_redemption' => $min_redemption,
+            // Pagination variables
+            'current_page' => $page,
+            'total_pages' => $total_pages,
+            'has_pagination' => ($total_pages > 1),
         ));
 
         $this->setTemplate('customer_points.tpl');

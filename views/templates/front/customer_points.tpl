@@ -214,6 +214,38 @@
                         </tbody>
                     </table>
                 </div>
+                
+                {if $has_pagination}
+                <div class="text-center" style="margin-top: 15px;">
+                    <ul class="pagination pagination-sm">
+                        {if $current_page > 1}
+                            <li>
+                                <a href="{$link->getModuleLink('aerpoints', 'customerpoints', ['page' => ($current_page-1)])|escape:'html':'UTF-8'}" title="{l s='Previous' mod='aerpoints'}">
+                                    <i class="icon-angle-left"></i>
+                                </a>
+                            </li>
+                        {/if}
+                        
+                        {for $i=1 to $total_pages}
+                            {if $i == $current_page}
+                                <li class="active"><span>{$i}</span></li>
+                            {else}
+                                <li>
+                                    <a href="{$link->getModuleLink('aerpoints', 'customerpoints', ['page' => $i])|escape:'html':'UTF-8'}">{$i}</a>
+                                </li>
+                            {/if}
+                        {/for}
+                        
+                        {if $current_page < $total_pages}
+                            <li>
+                                <a href="{$link->getModuleLink('aerpoints', 'customerpoints', ['page' => ($current_page+1)])|escape:'html':'UTF-8'}" title="{l s='Next' mod='aerpoints'}">
+                                    <i class="icon-angle-right"></i>
+                                </a>
+                            </li>
+                        {/if}
+                    </ul>
+                </div>
+                {/if}
             </div>
         </div>
     {else}
