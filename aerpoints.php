@@ -552,6 +552,11 @@ class Aerpoints extends Module
             return;
         }
 
+        // Only process aerpoints data if aerpoints fields are present in the request
+        if (! Tools::isSubmit('aerpoints_earn') && ! Tools::isSubmit('aerpoints_buy')) {
+            return;
+        }
+
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
 
         $id_product = (int) $params['id_product'];
@@ -579,11 +584,11 @@ class Aerpoints extends Module
 
         // Add points_earned field to the listing
         $params['select'] .= ', COALESCE(ap.points_earn, 0) as points_earned';
-        $params['join'] .= ' LEFT JOIN `'._DB_PREFIX_.'aerpoints_product` ap ON (a.`id_product` = ap.`id_product` AND ap.`active` = 1)';
+        $params['join'] .= ' LEFT JOIN `'._DB_PREFIX_.'aerpoints_product` ap ON (a.`id_product` = ap.`id_product`)';
 
         // Add the field to the fields list for display
         $params['fields']['points_earned'] = array(
-            'title' => $this->l('Points Earned'),
+            'title' => $this->l('Points Earned') . ' 🏆',
             'align' => 'text-center',
             'class' => 'fixed-width-xs',
             'callback' => 'formatPointsEarned',
