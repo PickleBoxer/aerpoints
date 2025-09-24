@@ -385,10 +385,30 @@ class Aerpoints extends Module
         }
         // Check if order is cancelled
         elseif ($new_status->id == Configuration::get('PS_OS_CANCELED')) {
+            // If order was cancelled before completion, cancel pending points
             AerpointsPending::cancelPendingPoints($order->id);
+            // If order was cancelled after completion, remove awarded points
+            $customer_id = $order->id_customer;
+            $order_history = AerpointsHistory::getOrderHistory($order->id);
+            $points = 0;
+            $description = 'Points removed due to cancellation for order #'.$order->id;
+            // get only points for type 'earned'
+            if (is_array($order_history)) {
+                foreach ($order_history as $entry) {
+                    if (isset($entry['points']) && $entry['type'] == AerpointsHistory::TYPE_EARNED) {
+                        $points += (int) $entry['points'];
+                    }
+                }
+            }
+
+            if ($points > 0) {
+                AerpointsCustomer::removePoints($customer_id, $points, AerpointsHistory::TYPE_REFUND, $description, $order->id);
+            }
+            // TODO: Handle refund of vauchers
         }
         // Check if order is refunded
         elseif ($new_status->id == Configuration::get('PS_OS_REFUND')) {
+            /*
             // Remove points from customer
             $customer_id = $order->id_customer;
             $order_history = AerpointsHistory::getOrderHistory($order->id);
@@ -403,13 +423,8 @@ class Aerpoints extends Module
             }
             if ($points > 0) {
                 AerpointsCustomer::removePoints($customer_id, $points, AerpointsHistory::TYPE_REFUND, $description, $order->id);
-                /*AerpointsHistory::addHistoryEntry(
-                    $customer_id,
-                    -$points,
-                    AerpointsHistory::TYPE_REFUND,
-                    'Points removed due to refund for order #'.$order->id
-                );*/
             }
+            */
         }
     }
 
