@@ -15,79 +15,109 @@
 {if $customer_points > 0}
     <div id="aerpoints-cart-redemption" class="panel panel-default">
         <div class="panel-heading">
-            <h4 class="panel-title">{l s='AerPoints Redemption' mod='aerpoints'}</h4>
+            <h4 class="panel-title"><i class="icon-gift"></i> {l s='Redeem Points' mod='aerpoints'}</h4>
         </div>
         <div class="panel-body">
-            <p>{l s='You have' mod='aerpoints'} <strong>{$customer_points}</strong> {l s='points available' mod='aerpoints'}</p>
-            <p>{l s='Minimum redemption:' mod='aerpoints'} <strong>{$min_redemption}</strong> {l s='points' mod='aerpoints'}</p>
-
-            {if $redeemed_points > 0}
-                <div class="alert alert-success">
-                    <p>{l s='You are redeeming' mod='aerpoints'} <strong>{$redeemed_points}</strong>
-                        {l s='points for a discount of' mod='aerpoints'} <strong>{$redeemed_discount}</strong></p>
-                </div>
-            {else}
-                <div class="form-group">
-                    <label for="aerpoints_redeem_amount">{l s='Points to redeem:' mod='aerpoints'}</label>
-                    <div class="input-group" style="width: 200px;">
-                        <input type="number" id="aerpoints_redeem_amount" name="aerpoints_redeem_amount" class="form-control"
-                            min="{$min_redemption}" max="{$customer_points}" value="{$min_redemption}">
-                        <span class="input-group-btn">
-                            <button type="button" id="aerpoints_apply_btn" class="btn btn-primary">
-                                {l s='Apply Points' mod='aerpoints'}
-                            </button>
-                        </span>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="well well-sm" style="background: #f8f9fa; border: 1px solid #e9ecef;">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <p class="text-muted small" style="margin-bottom: 5px;">
+                                    {l s='Available Points' mod='aerpoints'}</p>
+                                <h4 class="-text-success" style="margin: 0; font-weight: bold;">{$customer_points}</h4>
+                            </div>
+                            <div class="col-sm-6">
+                                <p class="text-muted small" style="margin-bottom: 5px;">{l s='Minimum' mod='aerpoints'}
+                                </p>
+                                <h5 style="margin: 0; color: #6c757d;">{$min_redemption} {l s='points' mod='aerpoints'}
+                                </h5>
+                            </div>
+                        </div>
                     </div>
-                    <small class="help-block">{$point_value} {l s='points = 1€ discount' mod='aerpoints'}</small>
+
+                    {if $redeemed_points > 0}
+                        <div class="alert alert-success">
+                            <span>{l s='You are redeeming' mod='aerpoints'} <strong>{$redeemed_points}</strong>
+                                {l s='points for a discount of' mod='aerpoints'} <strong>{$redeemed_discount}</strong></span>
+                        </div>
+                    {else}
+                        <form class="form-inline" style="margin-top: 20px;">
+                            <div class="form-group" style="margin-right: 10px;">
+                                <label class="sr-only"
+                                    for="aerpoints_redeem_amount">{l s='Points to redeem' mod='aerpoints'}</label>
+                                <div class="input-group" style="width: 160px;">
+                                    <input type="number" id="aerpoints_redeem_amount" name="aerpoints_redeem_amount"
+                                        class="form-control" min="{$min_redemption}" max="{$customer_points}"
+                                        value="{$min_redemption}" placeholder="{l s='Points' mod='aerpoints'}">
+                                    <span class="input-group-addon">
+                                        <i class="icon-star"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <button type="button" id="aerpoints_apply_btn" class="btn btn-primary btn-sm">
+                                <i class="icon-magic"></i> {l s='Apply Points' mod='aerpoints'}
+                            </button>
+                        </form>
+                        <small class="help-block">{$point_value} {l s='points = 1€ discount' mod='aerpoints'}</small>
+                    {/if}
                 </div>
-            {/if}
+                <div class="col-md-4">
+                    <div class="text-center" style="padding: 20px 0;">
+                        <i class="icon-gift" style="font-size: 48px; color: #17a2b8; opacity: 0.3;"></i>
+                        <p class="text-muted small" style="margin-top: 10px; line-height: 1.4;">
+                            {l s='Turn your points into instant savings' mod='aerpoints'}
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script type="text/javascript">
-    {literal}
-        $(document).ready(function() {
-            var ajaxurl = '{/literal}{$link->getModuleLink('aerpoints', 'ajax')}{literal}';
-            
-            // Only bind event if button exists (when no points are already redeemed)
-            $('#aerpoints_apply_btn').click(function() {
-                var $btn = $(this);
-                var points = parseInt($('#aerpoints_redeem_amount').val());
-                var minRedemption = {/literal}{$min_redemption}{literal};
-                
-                if (points < minRedemption) {
-                    alert('{/literal}{l s='Minimum redemption is' mod='aerpoints'}{literal} ' + minRedemption + ' {/literal}{l s='points' mod='aerpoints'}{literal}');
-                    return;
-                }
-                
-                $btn.prop('disabled', true).text('{/literal}{l s='Applying...' mod='aerpoints'}{literal}');
-                
-                $.ajax({
-                    url: ajaxurl,
-                    type: 'POST',
-                    async: false,
-                    cache: false,
-                    dataType: 'json',
-                    data: {
-                        ajax: true,
-                        action: 'applyPoints',
-                        points: points
-                    },
-                    success: function(response) {
-                        if (response.status === 'success') {
-                            location.reload();
-                        } else {
-                            alert(response.message);
+        {literal}
+            $(document).ready(function() {
+                var ajaxurl = '{/literal}{$link->getModuleLink('aerpoints', 'ajax')}{literal}';
+
+                // Only bind event if button exists (when no points are already redeemed)
+                $('#aerpoints_apply_btn').click(function() {
+                    var $btn = $(this);
+                    var points = parseInt($('#aerpoints_redeem_amount').val());
+                    var minRedemption = {/literal}{$min_redemption}{literal};
+
+                    if (points < minRedemption) {
+                        alert('{/literal}{l s='Minimum redemption is' mod='aerpoints'}{literal} ' + minRedemption + ' {/literal}{l s='points' mod='aerpoints'}{literal}');
+                        return;
+                    }
+
+                    $btn.prop('disabled', true).text('{/literal}{l s='Applying...' mod='aerpoints'}{literal}');
+
+                    $.ajax({
+                        url: ajaxurl,
+                        type: 'POST',
+                        async: false,
+                        cache: false,
+                        dataType: 'json',
+                        data: {
+                            ajax: true,
+                            action: 'applyPoints',
+                            points: points
+                        },
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                location.reload();
+                            } else {
+                                alert(response.message);
+                                $btn.prop('disabled', false).text('{/literal}{l s='Apply Points' mod='aerpoints'}{literal}');
+                            }
+                        },
+                        error: function() {
+                            alert('{/literal}{l s='An error occurred. Please try again.' mod='aerpoints'}{literal}');
                             $btn.prop('disabled', false).text('{/literal}{l s='Apply Points' mod='aerpoints'}{literal}');
                         }
-                    },
-                    error: function() {
-                        alert('{/literal}{l s='An error occurred. Please try again.' mod='aerpoints'}{literal}');
-                        $btn.prop('disabled', false).text('{/literal}{l s='Apply Points' mod='aerpoints'}{literal}');
-                    }
+                    });
                 });
             });
-        });
-    {/literal}
+        {/literal}
     </script>
 {/if}

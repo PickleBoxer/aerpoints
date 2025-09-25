@@ -140,7 +140,7 @@ class AdminAerpointsProductController extends ModuleAdminController
         $sql->leftJoin('product_lang', 'pl', 'p.id_product = pl.id_product AND pl.id_lang = ' . (int)$this->context->language->id);
         $sql->leftJoin('stock_available', 'sa', 'p.id_product = sa.id_product AND sa.id_product_attribute = 0');
         $sql->leftJoin('manufacturer', 'm', 'p.id_manufacturer = m.id_manufacturer');
-        $sql->where('p.active = 1');
+        //$sql->where('p.active = 1');
         
         // Add category filter
         if ($category_id > 0) {

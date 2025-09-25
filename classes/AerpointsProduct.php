@@ -59,8 +59,7 @@ class AerpointsProduct extends ObjectModel
     {
         $sql = 'SELECT * 
                 FROM ' . _DB_PREFIX_ . 'aerpoints_product 
-                WHERE id_product = ' . (int)$id_product . ' 
-                AND active = 1';
+                WHERE id_product = ' . (int)$id_product . '';
         
         return Db::getInstance()->getRow($sql);
     }

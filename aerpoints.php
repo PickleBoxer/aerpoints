@@ -332,7 +332,8 @@ class Aerpoints extends Module
         // Calculate points to earn from products in cart
         foreach ($cart->getProducts() as $product) {
             $product_points = AerpointsProduct::getProductPoints($product['id_product']);
-            if ($product_points && $product_points['points_earn'] > 0) {
+            // Only count points if product is active (active == 1) and has points_earn > 0
+            if ($product_points && $product_points['points_earn'] > 0 && isset($product_points['active']) && $product_points['active'] == 1) {
                 $total_points_to_earn += $product_points['points_earn'] * $product['quantity'];
             }
         }
@@ -450,7 +451,12 @@ class Aerpoints extends Module
         }
 
         $product_points = AerpointsProduct::getProductPoints($product->id);
-        if (! $product_points || ! $product_points['points_earn']) {
+        // Only show if product has points_earn > 0 and is active
+        if (
+            ! $product_points ||
+            ! $product_points['points_earn'] ||
+            (isset($product_points['active']) && $product_points['active'] == 0)
+        ) {
             return;
         }
 
@@ -481,6 +487,12 @@ class Aerpoints extends Module
         $customer_id = $this->context->customer->id;
         $customer_points = AerpointsCustomer::getPointBalance($customer_id);
 
+        // Customer point minimum redemption
+        $min_redemption = (int) Configuration::get('AERPOINTS_MIN_REDEMPTION');
+        if ($customer_points < $min_redemption) {
+            return; // Not enough points to redeem
+        }
+
         // Check for active AerPoints cart rules in current cart
         $redeemed_points = 0;
         $redeemed_discount = 0;
@@ -499,8 +511,6 @@ class Aerpoints extends Module
                 }
             }
         }
-
-        $min_redemption = (int) Configuration::get('AERPOINTS_MIN_REDEMPTION', 100);
 
         $this->context->smarty->assign(array(
             'customer_points' => $customer_points,
@@ -576,10 +586,11 @@ class Aerpoints extends Module
 
         $id_product = (int) $params['id_product'];
         $points_earn = (int) Tools::getValue('aerpoints_earn');
+        $active = (bool) Tools::getValue('aerpoints_active', true);
 
         // Only save if point value is set
         if ($points_earn > 0) {
-            AerpointsProduct::setProductPoints($id_product, $points_earn);
+            AerpointsProduct::setProductPoints($id_product, $points_earn, $active);
         } else {
             // Remove points configuration if value is 0
             AerpointsProduct::deleteProductPoints($id_product);
@@ -596,8 +607,8 @@ class Aerpoints extends Module
             return;
         }
 
-        // Add points_earned field to the listing
-        $params['select'] .= ', COALESCE(ap.points_earn, 0) as points_earned';
+        // Add points_earned and ap_active fields to the listing
+        $params['select'] .= ', COALESCE(ap.points_earn, 0) as points_earned, COALESCE(ap.active, 0) as aerpoints_active';
         $params['join'] .= ' LEFT JOIN `'._DB_PREFIX_.'aerpoints_product` ap ON (a.`id_product` = ap.`id_product`)';
 
         // Add the field to the fields list for display
@@ -612,11 +623,19 @@ class Aerpoints extends Module
 
     /**
      * Callback to format points earned display
+     * If AerPoints is inactive, show cell in gray or strikethrough style.
      */
     public function formatPointsEarned($value, $row)
     {
         $points = (int)$value;
-        return $points > 0 ? $points . ' ★' : '-';
+        $active = isset($row['aerpoints_active']) ? (int)$row['aerpoints_active'] : 0;
+
+        if ($points > 0 && $active === 1) {
+            return $points . ' ★';
+        } else {
+            // Style for inactive: gray text and strikethrough
+            return '<span style="color: #aaa; text-decoration: line-through;">' . ($points > 0 ? $points . ' ★' : '-') . '</span>';
+        }
     }
 
     /**

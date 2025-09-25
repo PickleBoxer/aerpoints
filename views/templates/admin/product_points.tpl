@@ -39,11 +39,29 @@
             </p>
         </div>
         
+        <div class="form-group">
+            <label class="control-label">
+                <i class="icon-check"></i>
+                {l s='Active' mod='aerpoints'}
+            </label>
+            <span class="switch prestashop-switch fixed-width-lg">
+                <input type="radio" name="aerpoints_active" id="aerpoints_active_on" value="1" {if !$product_points || $product_points.active == 1}checked="checked"{/if}>
+                <label for="aerpoints_active_on">{l s='Yes' mod='aerpoints'}</label>
+                <input type="radio" name="aerpoints_active" id="aerpoints_active_off" value="0" {if $product_points && $product_points.active == 0}checked="checked"{/if}>
+                <label for="aerpoints_active_off">{l s='No' mod='aerpoints'}</label>
+                <a class="slide-button btn"></a>
+            </span>
+            <p class="help-block">
+                {l s='Enable or disable points earning for this product' mod='aerpoints'}
+            </p>
+        </div>
+        
         {if $product_points}
         <div class="alert alert-info">
             <p><strong>{l s='Current Configuration:' mod='aerpoints'}</strong></p>
             <ul>
                 <li>{l s='Points Earned:' mod='aerpoints'} <strong>{$product_points.points_earn|intval}</strong></li>
+                <li>{l s='Status:' mod='aerpoints'} <strong>{if $product_points.active == 1}<span class="badge badge-success">{l s='Active' mod='aerpoints'}</span>{else}<span class="badge badge-danger">{l s='Inactive' mod='aerpoints'}</span>{/if}</strong></li>
                 <li>{l s='Last Updated:' mod='aerpoints'} {$product_points.date_upd}</li>
             </ul>
         </div>
