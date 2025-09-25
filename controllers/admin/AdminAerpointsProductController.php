@@ -40,7 +40,7 @@ class AdminAerpointsProductController extends ModuleAdminController
         $this->fields_list = $this->getFieldsList();
 
         $this->_select = 'pl.name as product_name';
-        $this->_join = 'LEFT JOIN `'._DB_PREFIX_.'product_lang` pl ON (a.`id_product` = pl.`id_product` AND pl.`id_lang` = '.(int) $this->context->language->id.')';
+        $this->_join = 'LEFT JOIN `'._DB_PREFIX_.'product_lang` pl ON (a.`id_product` = pl.`id_product` AND pl.`id_lang` = '.(int) $this->context->language->id.' AND pl.`id_shop` = '.(int)$this->context->shop->id.')';
         $this->_where = 'AND a.points_earn > 0';
     }
 
@@ -78,6 +78,22 @@ class AdminAerpointsProductController extends ModuleAdminController
                 'type' => 'datetime'
             )
         );
+    }
+
+    /**
+     * Get products for current shop context
+     */
+    private function getProductsForCurrentShop()
+    {
+        $sql = new DbQuery();
+        $sql->select('p.id_product, pl.name');
+        $sql->from('product', 'p');
+        $sql->leftJoin('product_lang', 'pl', 'p.id_product = pl.id_product AND pl.id_lang = ' . (int)$this->context->language->id . ' AND pl.id_shop = ' . (int)$this->context->shop->id);
+        $sql->innerJoin('product_shop', 'ps', 'p.id_product = ps.id_product AND ps.id_shop = ' . (int)$this->context->shop->id);
+        $sql->where('p.active = 1');
+        $sql->orderBy('pl.name ASC');
+        
+        return Db::getInstance()->executeS($sql);
     }
 
     /**
@@ -137,10 +153,10 @@ class AdminAerpointsProductController extends ModuleAdminController
         $sql = new DbQuery();
         $sql->select('p.id_product, pl.name, p.reference, p.price, sa.quantity, m.name as manufacturer_name');
         $sql->from('product', 'p');
-        $sql->leftJoin('product_lang', 'pl', 'p.id_product = pl.id_product AND pl.id_lang = ' . (int)$this->context->language->id);
+        $sql->leftJoin('product_lang', 'pl', 'p.id_product = pl.id_product AND pl.id_lang = ' . (int)$this->context->language->id . ' AND pl.id_shop = ' . (int)$this->context->shop->id);
         $sql->leftJoin('stock_available', 'sa', 'p.id_product = sa.id_product AND sa.id_product_attribute = 0');
         $sql->leftJoin('manufacturer', 'm', 'p.id_manufacturer = m.id_manufacturer');
-        //$sql->where('p.active = 1');
+        $sql->innerJoin('product_shop', 'ps', 'p.id_product = ps.id_product AND ps.id_shop = ' . (int)$this->context->shop->id);
         
         // Add category filter
         if ($category_id > 0) {
