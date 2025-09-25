@@ -9,8 +9,8 @@
         </p>
         
         <h4>{l s='Add New Product Points Configuration' mod='aerpoints'}</h4>
-        <form method="post" action="{$current}&amp;token={$token}">
-            
+        <form id="bulk_add_aerpoints_product" method="post" action="{$current}&amp;token={$token}">
+
             <!-- Product Filters -->
             <div class="row" style="margin-bottom: 15px;">
                 <div class="col-md-3">
@@ -95,8 +95,8 @@
                 <input type="number" id="points_earn" name="points_earn" class="form-control" min="0" placeholder="0" value="0">
                 <p class="help-block">{l s='Points customer earns when buying this product' mod='aerpoints'}</p>
             </div>
-            <input type="hidden" name="submitAddaerpoints_product" value="1" />
-            <button type="submit" name="submitAddaerpoints_product" class="btn btn-primary">{l s='Set Points' mod='aerpoints'}</button>
+            <input type="hidden" name="submitBulkAddaerpoints_product" value="1" />
+            <button type="submit" name="submitBulkAddaerpoints_product" class="btn btn-primary">{l s='Set Points' mod='aerpoints'}</button>
         </form>
     </div>
 </div>
@@ -194,7 +194,7 @@ $(document).ready(function() {
         }
         
         // Update form validation
-        var submitBtn = $('button[name="submitAddaerpoints_product"]');
+        var submitBtn = $('button[name="submitBulkAddaerpoints_product"]');
         if (selectedProducts.length > 0) {
             submitBtn.prop('disabled', false).removeClass('btn-default').addClass('btn-primary');
         } else {
@@ -273,7 +273,7 @@ $(document).ready(function() {
     });
     
     // Form submission validation
-    $('form').on('submit', function(e) {
+    $('#bulk_add_aerpoints_product').on('submit', function(e) {
         if (selectedProducts.length === 0) {
             e.preventDefault();
             alert('{l s='Please select at least one product.' mod='aerpoints'}');

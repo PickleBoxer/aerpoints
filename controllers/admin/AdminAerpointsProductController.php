@@ -65,6 +65,13 @@ class AdminAerpointsProductController extends ModuleAdminController
                 'align' => 'center',
                 'class' => 'fixed-width-sm'
             ),
+            'active' => array(
+                'title' => $this->l('Active'),
+                'align' => 'center',
+                'active' => 'status',
+                'type' => 'bool',
+                'class' => 'fixed-width-sm'
+            ),
             'date_upd' => array(
                 'title' => $this->l('Last Updated'),
                 'align' => 'center',
@@ -201,7 +208,25 @@ class AdminAerpointsProductController extends ModuleAdminController
                     'name' => 'points_earn',
                     'class' => 'fixed-width-sm',
                     'desc' => $this->l('Points customer earns when buying this product')
-                )
+                ),
+                array(
+                    'type' => 'switch',
+                    'label' => $this->l('Active'),
+                    'name' => 'active',
+                    'values' => array(
+                        array(
+                            'id' => 'active_on',
+                            'value' => 1
+                        ),
+                        array(
+                            'id' => 'active_off',
+                            'value' => 0
+                        )
+                    ),
+                    'is_bool' => true,
+                    'class' => 'fixed-width-sm',
+                    'desc' => $this->l('Enable or disable points for this product')
+                ),
             ),
             'submit' => array(
                 'title' => $this->l('Save'),
@@ -227,7 +252,8 @@ class AdminAerpointsProductController extends ModuleAdminController
 
     public function postProcess()
     {
-        if (Tools::isSubmit('submitAdd'.$this->table)) {
+        // Handle bulk product configuration panel submission
+        if (Tools::isSubmit('submitBulkAddaerpoints_product')) {
             $id_products = Tools::getValue('id_product');
             $points_earn = (int) Tools::getValue('points_earn');
 
@@ -271,6 +297,7 @@ class AdminAerpointsProductController extends ModuleAdminController
             }
             return true;
         }
+        
         return parent::postProcess();
     }
 
