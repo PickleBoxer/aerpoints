@@ -154,6 +154,15 @@ class Aerpoints extends Module
      */
     protected function getConfigForm()
     {
+        // Define order statuses for refund dropdown
+        $order_statuses = array();
+        foreach (OrderState::getOrderStates($this->context->language->id) as $status) {
+            $order_statuses[] = array(
+                'id_option' => $status['id_order_state'],
+                'name' => $status['name'],
+            );
+        }
+
         return array(
             'form' => array(
                 'legend' => array(
@@ -221,6 +230,17 @@ class Aerpoints extends Module
                             )
                         ),
                     ),
+                    array(
+                        'type' => 'select',
+                        'label' => $this->l('Refund Order Status'),
+                        'name' => 'AERPOINTS_REFUND_STATUS',
+                        'desc' => $this->l('Select the order status to trigger points refund.'),
+                        'options' => array(
+                            'query' => $order_statuses,
+                            'id' => 'id_option',
+                            'name' => 'name',
+                        ),
+                    ),
                 ),
                 'submit' => array(
                     'title' => $this->l('Save'),
@@ -240,6 +260,7 @@ class Aerpoints extends Module
             'AERPOINTS_POINT_VALUE' => (int) Tools::getValue('AERPOINTS_POINT_VALUE', Configuration::get('AERPOINTS_POINT_VALUE')),
             'AERPOINTS_MIN_REDEMPTION' => (int) Tools::getValue('AERPOINTS_MIN_REDEMPTION', Configuration::get('AERPOINTS_MIN_REDEMPTION')),
             'AERPOINTS_PARTIAL_PAYMENT' => (bool) Tools::getValue('AERPOINTS_PARTIAL_PAYMENT', Configuration::get('AERPOINTS_PARTIAL_PAYMENT')),
+            'AERPOINTS_REFUND_STATUS' => (int) Tools::getValue('AERPOINTS_REFUND_STATUS', Configuration::get('AERPOINTS_REFUND_STATUS')),
         );
     }
 
@@ -362,6 +383,7 @@ class Aerpoints extends Module
         // Check if customer is allowed to use points system
         $order = new Order($params['id_order']);
         $customer_id = $order->id_customer;
+        $cart_rules = $params['cart']->getCartRules();
 
         $allowed_customers = Configuration::get('AERPOINTS_CUSTOMERS');
         if (! empty($allowed_customers)) {
@@ -388,12 +410,14 @@ class Aerpoints extends Module
         elseif ($new_status->id == Configuration::get('PS_OS_CANCELED')) {
             // If order was cancelled before completion, cancel pending points
             AerpointsPending::cancelPendingPoints($order->id);
-            // If order was cancelled after completion, remove awarded points
-            $customer_id = $order->id_customer;
+        }
+        // Check if order is refunded
+        if ($new_status->id == (int) Configuration::get('AERPOINTS_REFUND_STATUS')) {
             $order_history = AerpointsHistory::getOrderHistory($order->id);
             $points = 0;
             $description = 'Points removed due to cancellation for order #'.$order->id;
-            // get only points for type 'earned'
+
+            // Remove earned points
             if (is_array($order_history)) {
                 foreach ($order_history as $entry) {
                     if (isset($entry['points']) && $entry['type'] == AerpointsHistory::TYPE_EARNED) {
@@ -401,31 +425,21 @@ class Aerpoints extends Module
                     }
                 }
             }
-
             if ($points > 0) {
                 AerpointsCustomer::removePoints($customer_id, $points, AerpointsHistory::TYPE_REFUND, $description, $order->id);
             }
-            // TODO: Handle refund of vauchers
-        }
-        // Check if order is refunded
-        elseif ($new_status->id == Configuration::get('PS_OS_REFUND')) {
-            /*
-            // Remove points from customer
-            $customer_id = $order->id_customer;
-            $order_history = AerpointsHistory::getOrderHistory($order->id);
-            $points = 0;
-            $description = 'Points removed due to refund for order #'.$order->id;
-            if (is_array($order_history)) {
-                foreach ($order_history as $entry) {
-                    if (isset($entry['points'])) {
-                        $points += (int) $entry['points'];
+
+            // Refund voucher points
+            $cart_rules = $params['cart']->getCartRules();
+            foreach ($cart_rules as $cart_rule) {
+                $history_entry = AerpointsHistory::getHistoryByCartRule($cart_rule['id_cart_rule']);
+                if ($history_entry && $history_entry['id_order'] == $order->id && isset($history_entry['points'])) {
+                    $voucher_points = abs((int) $history_entry['points']);
+                    if ($voucher_points > 0) {
+                        AerpointsCustomer::removePoints($customer_id, $voucher_points, AerpointsHistory::TYPE_REFUND, $description, $order->id);
                     }
                 }
             }
-            if ($points > 0) {
-                AerpointsCustomer::removePoints($customer_id, $points, AerpointsHistory::TYPE_REFUND, $description, $order->id);
-            }
-            */
         }
     }
 
@@ -603,7 +617,7 @@ class Aerpoints extends Module
      */
     public function hookActionAdminProductsListingFieldsModifier($params)
     {
-        if (!Configuration::get('AERPOINTS_ENABLED')) {
+        if (! Configuration::get('AERPOINTS_ENABLED')) {
             return;
         }
 
@@ -613,7 +627,7 @@ class Aerpoints extends Module
 
         // Add the field to the fields list for display
         $params['fields']['points_earned'] = array(
-            'title' => $this->l('Points Earned') . ' 🏆',
+            'title' => $this->l('Points Earned').' 🏆',
             'align' => 'text-center',
             'class' => 'fixed-width-xs',
             'callback' => 'formatPointsEarned',
@@ -627,14 +641,14 @@ class Aerpoints extends Module
      */
     public function formatPointsEarned($value, $row)
     {
-        $points = (int)$value;
-        $active = isset($row['aerpoints_active']) ? (int)$row['aerpoints_active'] : 0;
+        $points = (int) $value;
+        $active = isset($row['aerpoints_active']) ? (int) $row['aerpoints_active'] : 0;
 
         if ($points > 0 && $active === 1) {
-            return $points . ' ★';
+            return $points.' ★';
         } else {
             // Style for inactive: gray text and strikethrough
-            return '<span style="color: #aaa; text-decoration: line-through;">' . ($points > 0 ? $points . ' ★' : '-') . '</span>';
+            return '<span style="color: #aaa; text-decoration: line-through;">'.($points > 0 ? $points.' ★' : '-').'</span>';
         }
     }
 
