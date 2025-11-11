@@ -19,26 +19,45 @@
     </div>
     <div class="panel-body">
         <p class="help-block">
-            {l s='Configure how many points customers earn when buying this product.' mod='aerpoints'}
+            {l s='Configure points for this product. Use fixed points OR ratio-based calculation.' mod='aerpoints'}
         </p>
-        
+
         <div class="form-group">
             <label class="control-label">
                 <i class="icon-plus"></i>
-                {l s='Points Earned' mod='aerpoints'}
+                {l s='Fixed Points (Override)' mod='aerpoints'}
             </label>
-            <input type="number" 
-                   name="aerpoints_earn" 
+            <input type="number"
+                   name="aerpoints_earn"
                    id="aerpoints_earn"
-                   class="form-control" 
+                   class="form-control"
                    value="{if $product_points}{$product_points.points_earn|intval}{else}0{/if}"
                    min="0"
                    placeholder="0">
             <p class="help-block">
-                {l s='Points customer earns when buying this product' mod='aerpoints'}
+                {l s='Fixed points earned. If > 0, this overrides ratio calculation.' mod='aerpoints'}
             </p>
         </div>
-        
+
+        <div class="form-group">
+            <label class="control-label">
+                <i class="icon-exchange"></i>
+                {l s='Points Ratio (per €1)' mod='aerpoints'}
+            </label>
+            <input type="number"
+                   name="aerpoints_ratio"
+                   id="aerpoints_ratio"
+                   class="form-control"
+                   value="{if $product_points && isset($product_points.points_ratio)}{$product_points.points_ratio|string_format:"%.2f"}{else}0.00{/if}"
+                   min="0"
+                   max="100"
+                   step="0.01"
+                   placeholder="0.00">
+            <p class="help-block">
+                {l s='Points per euro (tax-excluded). Used when Fixed Points = 0. Max: 100. Example: 2.5 = 2.5 points per €1' mod='aerpoints'}
+            </p>
+        </div>
+
         <div class="form-group">
             <label class="control-label">
                 <i class="icon-check"></i>
@@ -55,20 +74,31 @@
                 {l s='Enable or disable points earning for this product' mod='aerpoints'}
             </p>
         </div>
-        
+
+        <div class="alert alert-info" id="aerpoints-preview">
+            <p><strong>💡 {l s='Preview Calculation' mod='aerpoints'}</strong></p>
+            <div id="preview-content">
+                <p id="preview-mode">{l s='Mode: Not configured' mod='aerpoints'}</p>
+                <p id="preview-calc">{l s='For a €10 product: 0 points' mod='aerpoints'}</p>
+            </div>
+        </div>
+
         {if $product_points}
-        <div class="alert alert-info">
+        <div class="alert alert-success">
             <p><strong>{l s='Current Configuration:' mod='aerpoints'}</strong></p>
             <ul>
-                <li>{l s='Points Earned:' mod='aerpoints'} <strong>{$product_points.points_earn|intval}</strong></li>
+                <li>{l s='Fixed Points:' mod='aerpoints'} <strong>{$product_points.points_earn|intval}</strong></li>
+                {if isset($product_points.points_ratio)}
+                <li>{l s='Points Ratio:' mod='aerpoints'} <strong>{$product_points.points_ratio|string_format:"%.2f"}×</strong></li>
+                {/if}
                 <li>{l s='Status:' mod='aerpoints'} <strong>{if $product_points.active == 1}<span class="badge badge-success">{l s='Active' mod='aerpoints'}</span>{else}<span class="badge badge-danger">{l s='Inactive' mod='aerpoints'}</span>{/if}</strong></li>
                 <li>{l s='Last Updated:' mod='aerpoints'} {$product_points.date_upd}</li>
             </ul>
         </div>
         {/if}
-        
+
         <div class="alert alert-warning">
-            <p><strong>{l s='Note:' mod='aerpoints'}</strong> {l s='Set value to 0 to remove points configuration for this product.' mod='aerpoints'}</p>
+            <p><strong>{l s='Note:' mod='aerpoints'}</strong> {l s='Set both values to 0 to remove points configuration for this product.' mod='aerpoints'}</p>
         </div>
     </div>
     <div class="panel-footer">

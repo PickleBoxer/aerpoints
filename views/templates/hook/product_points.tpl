@@ -23,15 +23,13 @@
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 
-{if $product_points}
+{if $calculated_points && $calculated_points > 0}
 <div class="aerpoints-product-info">
-    {if $product_points.points_earn > 0}
     <div class="aerpoints-earn">
         <i class="icon-trophy"></i>
         <span class="aerpoints-text">
-            {l s='Earn' mod='aerpoints'} <strong>{$product_points.points_earn}</strong> {l s='points' mod='aerpoints'}
+            {l s='Earn' mod='aerpoints'} <strong>{$calculated_points}</strong> {l s='points with this product' mod='aerpoints'}
         </span>
     </div>
-    {/if}
 </div>
 {/if}

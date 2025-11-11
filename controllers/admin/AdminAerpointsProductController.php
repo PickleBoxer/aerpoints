@@ -41,7 +41,7 @@ class AdminAerpointsProductController extends ModuleAdminController
 
         $this->_select = 'pl.name as product_name';
         $this->_join = 'LEFT JOIN `'._DB_PREFIX_.'product_lang` pl ON (a.`id_product` = pl.`id_product` AND pl.`id_lang` = '.(int) $this->context->language->id.' AND pl.`id_shop` = '.(int)$this->context->shop->id.')';
-        $this->_where = 'AND a.points_earn > 0';
+        $this->_where = 'AND (a.points_earn > 0 OR a.points_ratio > 0)';
     }
 
     /**
@@ -61,7 +61,12 @@ class AdminAerpointsProductController extends ModuleAdminController
                 'filter_key' => 'pl!name'
             ),
             'points_earn' => array(
-                'title' => $this->l('Points Earned'),
+                'title' => $this->l('Fixed Points'),
+                'align' => 'center',
+                'class' => 'fixed-width-sm'
+            ),
+            'points_ratio' => array(
+                'title' => $this->l('Ratio'),
                 'align' => 'center',
                 'class' => 'fixed-width-sm'
             ),
@@ -92,7 +97,7 @@ class AdminAerpointsProductController extends ModuleAdminController
         $sql->innerJoin('product_shop', 'ps', 'p.id_product = ps.id_product AND ps.id_shop = ' . (int)$this->context->shop->id);
         $sql->where('p.active = 1');
         $sql->orderBy('pl.name ASC');
-        
+
         return Db::getInstance()->executeS($sql);
     }
 
@@ -112,7 +117,7 @@ class AdminAerpointsProductController extends ModuleAdminController
         // Get categories and manufacturers for filters
         $categories = Category::getCategories($this->context->language->id, true, false);
         $manufacturers = Manufacturer::getManufacturers(false, $this->context->language->id);
-        
+
         $this->context->smarty->assign(array(
             'categories' => $categories,
             'manufacturers' => $manufacturers,
@@ -120,7 +125,7 @@ class AdminAerpointsProductController extends ModuleAdminController
             'token' => $this->token,
             'ajax_url' => self::$currentIndex . '&ajax=1&action=getFilteredProducts&token=' . $this->token
         ));
-        
+
         return $this->context->smarty->fetch(_PS_MODULE_DIR_.'aerpoints/views/templates/admin/product_configuration_panel.tpl');
     }
 
@@ -130,7 +135,7 @@ class AdminAerpointsProductController extends ModuleAdminController
     public function ajaxProcess()
     {
         $action = Tools::getValue('action');
-        
+
         switch ($action) {
             case 'getFilteredProducts':
                 $this->ajaxProcessGetFilteredProducts();
@@ -149,7 +154,7 @@ class AdminAerpointsProductController extends ModuleAdminController
         $category_id = (int)Tools::getValue('category_id', 0);
         $manufacturer_id = (int)Tools::getValue('manufacturer_id', 0);
         $limit = (int)Tools::getValue('limit', 50); // Limit results to 50 by default
-        
+
         $sql = new DbQuery();
         $sql->select('p.id_product, pl.name, p.reference, p.price, sa.quantity, m.name as manufacturer_name');
         $sql->from('product', 'p');
@@ -157,41 +162,42 @@ class AdminAerpointsProductController extends ModuleAdminController
         $sql->leftJoin('stock_available', 'sa', 'p.id_product = sa.id_product AND sa.id_product_attribute = 0');
         $sql->leftJoin('manufacturer', 'm', 'p.id_manufacturer = m.id_manufacturer');
         $sql->innerJoin('product_shop', 'ps', 'p.id_product = ps.id_product AND ps.id_shop = ' . (int)$this->context->shop->id);
-        
+
         // Add category filter
         if ($category_id > 0) {
             $sql->leftJoin('category_product', 'cp', 'p.id_product = cp.id_product');
             $sql->where('cp.id_category = ' . $category_id);
         }
-        
+
         // Add manufacturer filter
         if ($manufacturer_id > 0) {
             $sql->where('p.id_manufacturer = ' . $manufacturer_id);
         }
-        
+
         // Add search filter
         if (!empty($search)) {
             $sql->where('(pl.name LIKE "%' . pSQL($search) . '%" OR p.reference LIKE "%' . pSQL($search) . '%")');
         }
-        
+
         $sql->orderBy('pl.name ASC');
         $sql->limit($limit);
-        
+
         $products = Db::getInstance()->executeS($sql);
-        
+
         if (!$products) {
             $products = array();
         }
-        
+
         // Check which products already have points configured
         foreach ($products as &$product) {
             $existing_points = AerpointsProduct::getProductPoints($product['id_product']);
             $product['has_points'] = $existing_points ? true : false;
             $product['current_points_earn'] = $existing_points ? $existing_points['points_earn'] : 0;
+            $product['current_points_ratio'] = $existing_points && isset($existing_points['points_ratio']) ? $existing_points['points_ratio'] : 0;
             $product['price'] = number_format($product['price'], 2);
             $product['quantity'] = (int)$product['quantity'];
         }
-        
+
         die(Tools::jsonEncode(array('products' => $products)));
     }
 
@@ -220,10 +226,17 @@ class AdminAerpointsProductController extends ModuleAdminController
                 ),
                 array(
                     'type' => 'text',
-                    'label' => $this->l('Points Earned'),
+                    'label' => $this->l('Fixed Points'),
                     'name' => 'points_earn',
                     'class' => 'fixed-width-sm',
-                    'desc' => $this->l('Points customer earns when buying this product')
+                    'desc' => $this->l('Fixed points earned (overrides ratio if > 0)')
+                ),
+                array(
+                    'type' => 'text',
+                    'label' => $this->l('Points Ratio'),
+                    'name' => 'points_ratio',
+                    'class' => 'fixed-width-sm',
+                    'desc' => $this->l('Points per euro (tax-excluded). Max: 100')
                 ),
                 array(
                     'type' => 'switch',
@@ -271,16 +284,22 @@ class AdminAerpointsProductController extends ModuleAdminController
         // Handle bulk product configuration panel submission
         if (Tools::isSubmit('submitBulkAddaerpoints_product')) {
             $id_products = Tools::getValue('id_product');
-            $points_earn = (int) Tools::getValue('points_earn');
+            $points_earn = (int) Tools::getValue('points_earn', 0);
+            $points_ratio = (float) Tools::getValue('points_ratio', 0.00);
 
             if (!is_array($id_products) || empty($id_products)) {
                 $this->errors[] = Tools::displayError($this->l('Please select at least one product.'));
                 return false;
             }
 
-            if ($points_earn <= 0) {
-                $this->errors[] = Tools::displayError($this->l('Points earned must be greater than 0'));
+            if ($points_earn <= 0 && $points_ratio <= 0) {
+                $this->errors[] = Tools::displayError($this->l('Either fixed points or ratio must be greater than 0'));
                 return false;
+            }
+
+            // Validate ratio max
+            if ($points_ratio > 100) {
+                $points_ratio = 100;
             }
 
             $success_count = 0;
@@ -297,11 +316,11 @@ class AdminAerpointsProductController extends ModuleAdminController
                 $existing = AerpointsProduct::getProductPoints($id_product);
                 if ($existing) {
                     // Update existing configuration
-                    AerpointsProduct::setProductPoints($id_product, $points_earn);
+                    AerpointsProduct::setProductPoints($id_product, $points_earn, true, $points_ratio);
                     $updated_count++;
                 } else {
                     // Create new configuration
-                    AerpointsProduct::setProductPoints($id_product, $points_earn);
+                    AerpointsProduct::setProductPoints($id_product, $points_earn, true, $points_ratio);
                     $created_count++;
                 }
             }
@@ -313,7 +332,7 @@ class AdminAerpointsProductController extends ModuleAdminController
             }
             return true;
         }
-        
+
         return parent::postProcess();
     }
 

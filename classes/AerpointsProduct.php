@@ -33,6 +33,7 @@ class AerpointsProduct extends ObjectModel
     public $id_aerpoints_product;
     public $id_product;
     public $points_earn;
+    public $points_ratio;
     public $active;
     public $date_add;
     public $date_upd;
@@ -46,6 +47,7 @@ class AerpointsProduct extends ObjectModel
         'fields' => array(
             'id_product' => array('type' => self::TYPE_INT, 'validate' => 'isUnsignedId', 'required' => true),
             'points_earn' => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'points_ratio' => array('type' => self::TYPE_FLOAT, 'validate' => 'isFloat'),
             'active' => array('type' => self::TYPE_BOOL, 'validate' => 'isBool'),
             'date_add' => array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
             'date_upd' => array('type' => self::TYPE_DATE, 'validate' => 'isDate'),
@@ -57,38 +59,40 @@ class AerpointsProduct extends ObjectModel
      */
     public static function getProductPoints($id_product)
     {
-        $sql = 'SELECT * 
-                FROM ' . _DB_PREFIX_ . 'aerpoints_product 
+        $sql = 'SELECT *
+                FROM ' . _DB_PREFIX_ . 'aerpoints_product
                 WHERE id_product = ' . (int)$id_product . '';
-        
+
         return Db::getInstance()->getRow($sql);
     }
 
     /**
      * Set point configuration for a product
      */
-    public static function setProductPoints($id_product, $points_earn = 0, $active = true)
+    public static function setProductPoints($id_product, $points_earn = 0, $active = true, $points_ratio = 0.00)
     {
         $existing = self::getProductPoints($id_product);
-        
+
         if ($existing) {
             // Update existing record
-            $sql = 'UPDATE ' . _DB_PREFIX_ . 'aerpoints_product 
+            $sql = 'UPDATE ' . _DB_PREFIX_ . 'aerpoints_product
                     SET points_earn = ' . (int)$points_earn . ',
+                        points_ratio = ' . (float)$points_ratio . ',
                         active = ' . ($active ? 1 : 0) . ',
                         date_upd = NOW()
                     WHERE id_product = ' . (int)$id_product;
-            
+
             return Db::getInstance()->execute($sql);
         } else {
             // Create new record
             $aerpoints_product = new AerpointsProduct();
             $aerpoints_product->id_product = $id_product;
             $aerpoints_product->points_earn = $points_earn;
+            $aerpoints_product->points_ratio = $points_ratio;
             $aerpoints_product->active = $active;
             $aerpoints_product->date_add = date('Y-m-d H:i:s');
             $aerpoints_product->date_upd = date('Y-m-d H:i:s');
-            
+
             return $aerpoints_product->add();
         }
     }
@@ -102,13 +106,13 @@ class AerpointsProduct extends ObjectModel
                 FROM ' . _DB_PREFIX_ . 'aerpoints_product ap
                 LEFT JOIN ' . _DB_PREFIX_ . 'product p ON ap.id_product = p.id_product
                 LEFT JOIN ' . _DB_PREFIX_ . 'product_lang pl ON (p.id_product = pl.id_product AND pl.id_lang = ' . (int)Context::getContext()->language->id . ')';
-        
+
         if ($active_only) {
             $sql .= ' WHERE ap.active = 1';
         }
-        
+
         $sql .= ' ORDER BY ap.date_upd DESC';
-        
+
         return Db::getInstance()->executeS($sql);
     }
 
@@ -126,10 +130,49 @@ class AerpointsProduct extends ObjectModel
      */
     public static function deleteProductPoints($id_product)
     {
-        $sql = 'DELETE FROM ' . _DB_PREFIX_ . 'aerpoints_product 
+        $sql = 'DELETE FROM ' . _DB_PREFIX_ . 'aerpoints_product
                 WHERE id_product = ' . (int)$id_product;
-        
+
         return Db::getInstance()->execute($sql);
+    }
+
+    /**
+     * Calculate points for a product based on fixed/ratio mode
+     * Fixed points override ratio calculation
+     * @param int $id_product Product ID
+     * @param float $price_tax_excl Tax-excluded price per unit
+     * @param int $quantity Quantity purchased
+     * @return int Calculated points (floored to integer)
+     */
+    public static function calculateProductPoints($id_product, $price_tax_excl, $quantity = 1)
+    {
+        $config = self::getProductPoints($id_product);
+
+        if (!$config || $config['active'] != 1) {
+            return 0;
+        }
+
+        // Fixed points override ratio
+        if (isset($config['points_earn']) && $config['points_earn'] > 0) {
+            return (int)$config['points_earn'] * $quantity;
+        }
+
+        // Use ratio if available
+        if (isset($config['points_ratio']) && $config['points_ratio'] > 0) {
+            return (int)floor($price_tax_excl * $config['points_ratio'] * $quantity);
+        }
+
+        return 0;
+    }
+
+    /**
+     * Validate ratio value
+     * @param float $ratio
+     * @return bool
+     */
+    public static function isValidRatio($ratio)
+    {
+        return is_numeric($ratio) && $ratio >= 0 && $ratio <= 100;
     }
 
 }

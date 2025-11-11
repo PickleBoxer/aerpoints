@@ -1,6 +1,5 @@
 <?php
 
-use Prestashop\ModuleLibGuzzleAdapter\Guzzle5\Config;
 /**
  * 2007-2025 PrestaShop
  *
@@ -38,7 +37,7 @@ class Aerpoints extends Module
     {
         $this->name = 'aerpoints';
         $this->tab = 'pricing_promotion';
-        $this->version = '1.0.0';
+        $this->version = '1.1.0';
         $this->author = 'AerDigital';
         $this->need_instance = 0;
 
@@ -353,9 +352,17 @@ class Aerpoints extends Module
         // Calculate points to earn from products in cart
         foreach ($cart->getProducts() as $product) {
             $product_points = AerpointsProduct::getProductPoints($product['id_product']);
-            // Only count points if product is active (active == 1) and has points_earn > 0
-            if ($product_points && $product_points['points_earn'] > 0 && isset($product_points['active']) && $product_points['active'] == 1) {
-                $total_points_to_earn += $product_points['points_earn'] * $product['quantity'];
+            // Only count points if product is active
+            if ($product_points && isset($product_points['active']) && $product_points['active'] == 1) {
+                // Get tax-excluded price
+                $price_tax_excl = Product::getPriceStatic($product['id_product'], false);
+                // Use new calculation method (supports both fixed and ratio)
+                $points = AerpointsProduct::calculateProductPoints(
+                    $product['id_product'],
+                    $price_tax_excl,
+                    $product['quantity']
+                );
+                $total_points_to_earn += $points;
             }
         }
 
@@ -465,17 +472,25 @@ class Aerpoints extends Module
         }
 
         $product_points = AerpointsProduct::getProductPoints($product->id);
-        // Only show if product has points_earn > 0 and is active
+        // Only show if product is active and has either fixed points or ratio
         if (
             ! $product_points ||
-            ! $product_points['points_earn'] ||
             (isset($product_points['active']) && $product_points['active'] == 0)
         ) {
             return;
         }
 
+        // Calculate actual points customer will earn
+        $price_tax_excl = Product::getPriceStatic($product->id, false);
+        $calculated_points = AerpointsProduct::calculateProductPoints($product->id, $price_tax_excl, 1);
+
+        if ($calculated_points <= 0) {
+            return; // Don't show if no points
+        }
+
         $this->context->smarty->assign(array(
             'product_points' => $product_points,
+            'calculated_points' => $calculated_points,
             'point_value' => Configuration::get('AERPOINTS_POINT_VALUE', 100),
         ));
 
@@ -592,21 +607,27 @@ class Aerpoints extends Module
         }
 
         // Only process aerpoints data if aerpoints fields are present in the request
-        if (! Tools::isSubmit('aerpoints_earn')) {
+        if (! Tools::isSubmit('aerpoints_earn') && ! Tools::isSubmit('aerpoints_ratio')) {
             return;
         }
 
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
 
         $id_product = (int) $params['id_product'];
-        $points_earn = (int) Tools::getValue('aerpoints_earn');
+        $points_earn = (int) Tools::getValue('aerpoints_earn', 0);
+        $points_ratio = (float) Tools::getValue('aerpoints_ratio', 0.00);
         $active = (bool) Tools::getValue('aerpoints_active', true);
 
-        // Only save if point value is set
-        if ($points_earn > 0) {
-            AerpointsProduct::setProductPoints($id_product, $points_earn, $active);
+        // Validate ratio
+        if ($points_ratio > 100) {
+            $points_ratio = 100;
+        }
+
+        // Save if either fixed points or ratio is set
+        if ($points_earn > 0 || $points_ratio > 0) {
+            AerpointsProduct::setProductPoints($id_product, $points_earn, $active, $points_ratio);
         } else {
-            // Remove points configuration if value is 0
+            // Remove points configuration if both values are 0
             AerpointsProduct::deleteProductPoints($id_product);
         }
     }
@@ -621,8 +642,8 @@ class Aerpoints extends Module
             return;
         }
 
-        // Add points_earned and ap_active fields to the listing
-        $params['select'] .= ', COALESCE(ap.points_earn, 0) as points_earned, COALESCE(ap.active, 0) as aerpoints_active';
+        // Add points_earned, points_ratio and ap_active fields to the listing
+        $params['select'] .= ', COALESCE(ap.points_earn, 0) as points_earned, COALESCE(ap.points_ratio, 0) as points_ratio, COALESCE(ap.active, 0) as aerpoints_active';
         $params['join'] .= ' LEFT JOIN `'._DB_PREFIX_.'aerpoints_product` ap ON (a.`id_product` = ap.`id_product`)';
 
         // Add the field to the fields list for display
@@ -637,19 +658,25 @@ class Aerpoints extends Module
 
     /**
      * Callback to format points earned display
-     * If AerPoints is inactive, show cell in gray or strikethrough style.
+     * Shows fixed points or ratio based on configuration
      */
     public function formatPointsEarned($value, $row)
     {
         $points = (int) $value;
+        $ratio = isset($row['points_ratio']) ? (float) $row['points_ratio'] : 0;
         $active = isset($row['aerpoints_active']) ? (int) $row['aerpoints_active'] : 0;
 
-        if ($points > 0 && $active === 1) {
-            return $points.' ★';
-        } else {
-            // Style for inactive: gray text and strikethrough
-            return '<span style="color: #aaa; text-decoration: line-through;">'.($points > 0 ? $points.' ★' : '-').'</span>';
+        if ($active !== 1) {
+            return '<span style="color: #aaa;">Disabled</span>';
         }
+
+        if ($points > 0) {
+            return $points.' ★ <small>(fixed)</small>';
+        } elseif ($ratio > 0) {
+            return $ratio.'× <small>(ratio)</small>';
+        }
+
+        return '-';
     }
 
     /**
@@ -820,7 +847,7 @@ class Aerpoints extends Module
 
         // Get order cart rules
         $order_cart_rules = Db::getInstance()->executeS('
-            SELECT ocr.id_cart_rule 
+            SELECT ocr.id_cart_rule
             FROM '._DB_PREFIX_.'order_cart_rule ocr
             WHERE ocr.id_order = '.(int) $id_order);
 

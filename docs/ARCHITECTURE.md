@@ -5,7 +5,7 @@ AerPoints is a loyalty points system module for PrestaShop 1.6 that allows custo
 
 ## Module Information
 - **Name:** aerpoints
-- **Version:** 1.0.0
+- **Version:** 1.1.0
 - **Author:** AerDigital
 - **PrestaShop Compatibility:** 1.6.x
 - **PHP Compatibility:** 7.4+
@@ -15,6 +15,7 @@ AerPoints is a loyalty points system module for PrestaShop 1.6 that allows custo
 - **Product-Centric:** Points are configured per product, not category-based
 - **Order State Management:** Points are pending until order completion
 - **Flexible Configuration:** Admin can configure point values and redemption rules
+- **Ratio-Based Calculation:** Support both fixed points and ratio-based dynamic calculation
 
 ## Database Schema
 
@@ -41,13 +42,14 @@ CREATE TABLE IF NOT EXISTS `{prefix}aerpoints_customer` (
 - `total_redeemed`: Lifetime total points redeemed (for reporting)
 
 ### 2. Product Points Configuration (`ps_aerpoints_product`)
-Defines point earning and redemption values for each product.
+Defines point earning values for each product (fixed or ratio-based).
 
 ```sql
 CREATE TABLE IF NOT EXISTS `{prefix}aerpoints_product` (
   `id_aerpoints_product` int(11) NOT NULL AUTO_INCREMENT,
   `id_product` int(11) NOT NULL,
   `points_earn` int(11) NOT NULL DEFAULT 0,
+  `points_ratio` decimal(10,2) NOT NULL DEFAULT 0.00,
   `active` tinyint(1) NOT NULL DEFAULT 1,
   `date_add` datetime NOT NULL,
   `date_upd` datetime NOT NULL,
@@ -57,8 +59,16 @@ CREATE TABLE IF NOT EXISTS `{prefix}aerpoints_product` (
 ```
 
 **Fields:**
-- `points_earn`: Points customer earns when purchasing this product
+- `points_earn`: Fixed points customer earns (overrides ratio if > 0)
+- `points_ratio`: Points multiplier per €1 (tax-excluded). Used when points_earn = 0
 - `active`: Whether points system is active for this product
+
+**Calculation Logic:**
+- If `points_earn > 0`: Use fixed points (e.g., 50 points per purchase)
+- Else if `points_ratio > 0`: Calculate dynamically (e.g., 2.5× means €10 product = 25 points)
+- Else: No points earned
+
+**Formula:** `points = floor(price_tax_excl × points_ratio × quantity)`
 
 ### 3. Pending Points (`ps_aerpoints_pending`)
 Manages points that are pending until order completion.
@@ -106,6 +116,66 @@ CREATE TABLE IF NOT EXISTS `{prefix}aerpoints_history` (
 - `manual_add`: Admin manually added points
 - `manual_remove`: Admin manually removed points
 - `refund`: Points restored from cancelled/refunded orders
+
+## Points Calculation System
+
+### Overview
+The module supports two calculation methods that can be configured per product:
+
+1. **Fixed Points** - Static point value (e.g., "Earn 50 points")
+2. **Ratio-Based** - Dynamic calculation based on price (e.g., "2.5 points per €1")
+
+### Priority Logic
+Fixed points **always override** ratio-based calculation:
+
+```
+if (points_earn > 0):
+    return points_earn × quantity
+else if (points_ratio > 0):
+    return floor(price_tax_excl × points_ratio × quantity)
+else:
+    return 0 (no points)
+```
+
+### Ratio-Based Calculation
+
+**Key Features:**
+- Uses **tax-excluded price** as the base
+- Ratio is a decimal multiplier (e.g., 2.5 = 2.5 points per €1)
+- Result is **floored** to nearest integer (no partial points)
+- Max ratio value: 100 (validated in admin and JS)
+
+**Examples:**
+
+| Fixed Points | Ratio | Price (tax-excl) | Qty | Calculation | Result |
+|--------------|-------|------------------|-----|-------------|---------|
+| 50 | 2.5 | €10.00 | 1 | Fixed override | **50 pts** |
+| 0 | 2.5 | €10.00 | 1 | floor(10 × 2.5 × 1) | **25 pts** |
+| 0 | 2.5 | €10.50 | 2 | floor(10.5 × 2.5 × 2) | **52 pts** |
+| 0 | 0.5 | €10.00 | 1 | floor(10 × 0.5 × 1) | **5 pts** |
+| 0 | 10 | €5.99 | 3 | floor(5.99 × 10 × 3) | **179 pts** |
+| 0 | 0 | €10.00 | 1 | Both zero | **0 pts** |
+
+**Implementation:**
+```php
+AerpointsProduct::calculateProductPoints($id_product, $price_tax_excl, $quantity);
+```
+
+### Admin Configuration
+
+**Product Edit Page Fields:**
+- **Fixed Points (Override)** - Integer, min: 0, no max
+- **Points Ratio (per €1)** - Decimal, min: 0.00, max: 100.00, step: 0.01
+- **Active** - Boolean toggle
+
+**Real-time Preview:**
+Shows calculation mode and example result for €10 product
+
+**Product List Display:**
+- Fixed: `50 ★ (fixed)`
+- Ratio: `2.5× (ratio)`
+- Disabled: `Disabled`
+- None: `-`
 
 ## Module Configuration
 

@@ -28,16 +28,30 @@ if (!defined('_PS_VERSION_')) {
 }
 
 /**
- * This function updates your module from previous versions to the version 1.1,
- * usefull when you modify your database, or register a new hook ...
- * Don't forget to create one file per version.
+ * Upgrade to version 1.1.0 - Add ratio-based points calculation
  */
 function upgrade_module_1_1_0($module)
 {
-    /*
-     * Do everything you want right there,
-     * You could add a column in one of your module's tables
-     */
+    // Check if points_ratio column already exists
+    $columns = Db::getInstance()->executeS('SHOW COLUMNS FROM `'._DB_PREFIX_.'aerpoints_product`');
+    $column_exists = false;
+
+    foreach ($columns as $column) {
+        if ($column['Field'] == 'points_ratio') {
+            $column_exists = true;
+            break;
+        }
+    }
+
+    // Add points_ratio column if it doesn't exist
+    if (!$column_exists) {
+        $sql = 'ALTER TABLE `'._DB_PREFIX_.'aerpoints_product`
+                ADD COLUMN `points_ratio` DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER `points_earn`';
+
+        if (!Db::getInstance()->execute($sql)) {
+            return false;
+        }
+    }
 
     return true;
 }
