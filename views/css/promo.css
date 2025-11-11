@@ -1,0 +1,362 @@
+/* Modal Popup Styles */
+.modal-popup {
+	-position: relative;
+	height: auto;
+	background: #DFEFFA;
+	box-shadow: 4px 8px 6.7px -1px rgba(0,0,0,0.06);
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+}
+.modal-popup-banner {
+	width: 100%;
+	height: 275px;
+	background: url('/modules/aerpoints/views/img/main-banner.png');
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.modal-popup-title {
+	margin-bottom: 1rem;
+	font-weight: 700;
+	font-size: 22px;
+	line-height: 27px;
+	text-align: center;
+	text-transform: uppercase;
+	color: #073053;
+}
+.modal-popup-desc {
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 20px;
+	text-align: center;
+	color: #A56C29;
+	width: 60%;
+	margin-bottom: 1rem;
+}
+.modal-popup-subtitle {
+	margin-bottom: 2rem;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 20px;
+	text-align: center;
+	text-transform: uppercase;
+	color: #A56C29;
+}
+.modal-popup-coin1 {
+	position: absolute;
+	width: 49.4px;
+	height: 49.74px;
+	left: 374px;
+	top: 336px;
+	background: url('/modules/aerpoints/views/img/coin.png');
+	transform: rotate(92.88deg);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.modal-popup-coin2 {
+	position: absolute;
+	width: 64px;
+	height: 64px;
+	left: 14px;
+	top: 386px;
+	background: url('/modules/aerpoints/views/img/coin.png');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.modal-popup-label {
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 20px;
+	text-align: center;
+	color: #452A06;
+}
+.modal-popup-input {
+  width: 100%;
+	margin-bottom: 2rem;
+	background: #fff;
+	border: 1px solid #C08E49;
+	border-radius: 8px;
+	padding: 8px;
+	font-size: 16px;
+}
+.modal-popup-btn {
+	margin-bottom: 5rem;
+	display: flex;
+	align-items: center;
+	padding: 0 3rem;
+	justify-content: center;
+	flex-direction: column;
+	height: 47px;
+	background: linear-gradient(90deg,#EEC67F 0%,#C08E49 100%);
+	box-shadow: 9px 6px 7.7px -2px rgba(0,0,0,0.14);
+	border-radius: 14px;
+}
+.modal-popup-btn-text {
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 20px;
+	text-align: center;
+	color: #452A06;
+  background: transparent;
+  border: none;
+}
+.input--hidden {
+  position: absolute;
+  left: -9999px;
+  visibility: hidden;
+}
+/* new */
+.landing-teaser {
+	position: relative;
+	-width: 1440px;
+	-height: 1024px;
+	background: #fff;
+	margin: 0 auto;
+	overflow: hidden;
+	font-family: 'Montserrat', Arial, sans-serif;
+  /* changed */
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding-bottom: 1rem;
+}
+.main-banner {
+	/* position: absolute;*/
+	width: 1920px;
+	height: 560px;
+	left: -240px;
+	top: 0px;
+	background: url('/modules/aerpoints/views/img/main-banner.png') no-repeat center center;
+	background-size: cover;
+	z-index: 1;
+  /* changed */
+  width: 100%;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.main-title {
+	position: absolute;
+	width: 714px;
+	height: 111px;
+	left: 363px;
+	top: 194px;
+	background: url('/modules/aerpoints/views/img/main-title.png') no-repeat center center;
+	background-size: contain;
+	z-index: 2;
+  /* changed */
+  position: relative;
+  left: 0;
+  top: 0;
+}
+.rectangle1 {
+	position: absolute;
+	/* width: 761px; */
+	/* height: 98px; */
+	left: 339px;
+	top: 485px;
+	background: linear-gradient(90deg, #EEC67F 0%, #C08E49 100%);
+	box-shadow: 9px 6px 7.7px -2px rgba(0, 0, 0, 0.14);
+	border-radius: 4px;
+	z-index: 3;
+  /* changed */
+  position: relative;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: -8rem;
+  padding: 2.2rem 8.5rem;
+}
+.rectangle2 {
+	position: absolute;
+	/* width: 1440px; */
+	/* height: 216px; */
+	left: 0px;
+	top: 628px;
+	background: #DFEFFA;
+	z-index: 2;
+  /* changed */
+  position: relative;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 3rem;
+  padding: 5rem;
+  width: 100%
+}
+.rectangle3 {
+	position: absolute;
+	/* width: 500px; */
+	/* height: 55px; */
+	left: 470px;
+	top: 887px;
+	background: linear-gradient(90deg, #EEC67F 0%, #C08E49 100%);
+	box-shadow: 9px 6px 7.7px -2px rgba(0, 0, 0, 0.14);
+	border-radius: 14px;
+	z-index: 3;
+  /* changed */
+  position: relative;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 3rem;
+  -padding: 1.6rem 6rem;
+}
+.coin2.c1 {
+	position: absolute;
+	width: 89px;
+	height: 90px;
+	left: 111px;
+	top: 682px;
+	background: url('/modules/aerpoints/views/img/coin.png') no-repeat center center;
+	background-size: contain;
+	z-index: 10;
+	animation: coinParallax1 6s infinite linear;
+  /* changed */
+  top: 66%;
+  left: 7%;
+}
+.coin2.c2 {
+	position: absolute;
+	width: 89px;
+	height: 90px;
+	left: 1258px;
+	top: 779px;
+	background: url('/modules/aerpoints/views/img/coin.png') no-repeat center center;
+	background-size: contain;
+	transform: rotate(92.88deg);
+	z-index: 10;
+	animation: coinParallax2 7s infinite linear;
+  /* changed */
+  left: 90%;
+  top: 76%;
+}
+@keyframes coinParallax1 { 0%{transform:translateY(0);} 50%{transform:translateY(20px);} 100%{transform:translateY(0);} }
+@keyframes coinParallax2 { 0%{transform:translateY(0) rotate(92.88deg);} 50%{transform:translateY(-20px) rotate(92.88deg);} 100%{transform:translateY(0) rotate(92.88deg);} }
+.text-premia {
+	/* position: absolute;
+	width: 913px;
+	height: 31px;
+	left: 263px;
+	top: 503px; */
+	font-family: 'Montserrat', Arial, sans-serif;
+	font-style: italic;
+	font-weight: 700;
+	font-size: 22px;
+	line-height: 27px;
+	text-align: center;
+	color: #082145;
+	z-index: 4;
+
+}
+.text-preziosi {
+	/*position: absolute;
+	width: 913px;
+	height: 31px;
+	left: 263px;
+	top: 534px; */
+	font-family: 'Montserrat', Arial, sans-serif;
+	font-style: italic;
+	font-weight: 700;
+	font-size: 22px;
+	line-height: 27px;
+	text-align: center;
+	color: #fff;
+	z-index: 4;
+}
+.text-title {
+	/* position: absolute;
+	width: 913px;
+	height: 31px;
+	left: 263px;
+	top: 674px; */
+	font-family: 'Montserrat', Arial, sans-serif;
+	font-style: normal;
+	font-weight: 700;
+	font-size: 22px;
+	line-height: 27px;
+	text-align: center;
+	text-transform: uppercase;
+	color: #266DA9;
+	z-index: 4;
+  /* added */
+  margin-bottom: 3rem;
+}
+.text-premi {
+	/* position: absolute;
+	width: 913px;
+	height: 31px;
+	left: 263px;
+	top: 727px; */
+	font-family: 'Montserrat', Arial, sans-serif;
+	font-style: normal;
+	font-weight: 700;
+	font-size: 22px;
+	line-height: 27px;
+	text-align: center;
+	color: #082145;
+	z-index: 4;
+  /* added */
+  margin-bottom: 1rem;
+}
+.text-scopri {
+	/* position: absolute;
+	width: 1146px;
+	height: 31px;
+	left: 147px;
+	top: 763px; */
+	font-family: 'Montserrat', Arial, sans-serif;
+	font-style: italic;
+	font-weight: 700;
+	font-size: 20px;
+	line-height: 24px;
+	text-align: center;
+	color: #082145;
+	z-index: 4;
+}
+.btn-scopri {
+	/* position: absolute;
+	width: 913px;
+	height: 31px;
+	left: 263px;
+	top: 903px; */
+	font-family: 'Montserrat', Arial, sans-serif;
+	font-style: normal;
+	font-weight: 700;
+	font-size: 16px;
+	line-height: 20px;
+	text-align: center;
+	color: #452A06;
+	background: linear-gradient(90deg, #EEC67F 0%, #C08E49 100%);
+	/* box-shadow: 9px 6px 7.7px -2px rgba(0, 0, 0, 0.14); */
+	border-radius: 14px;
+	border: none;
+	cursor: pointer;
+	z-index: 5;
+	/* changed */
+	width: 100%;
+	height: 100%;
+	background: transparent;
+	padding: 1.6rem 6rem;
+	transition: transform 0.2s cubic-bezier(.4,0,.2,1), box-shadow 0.2s cubic-bezier(.4,0,.2,1);
+}
+.btn-scopri:hover {
+	transform: scale(1.04);
+}
