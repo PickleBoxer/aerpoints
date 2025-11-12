@@ -82,6 +82,49 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'aerpoints_history` (
     KEY `id_cart_rule` (`id_cart_rule`)
 ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
+// Points Rules Table
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'aerpoints_rules` (
+    `id_aerpoints_rule` int(11) unsigned NOT NULL AUTO_INCREMENT,
+    `name` varchar(255) NOT NULL,
+    `description` text,
+    `action_type` enum(\'bonus\',\'multiplier\') NOT NULL DEFAULT \'bonus\',
+    `action_value` decimal(10,2) NOT NULL DEFAULT 0.00,
+    `priority` int(10) unsigned NOT NULL DEFAULT 1,
+    `date_from` datetime NOT NULL,
+    `date_to` datetime NOT NULL,
+    `quantity` int(10) unsigned NOT NULL DEFAULT 0,
+    `quantity_per_user` int(10) unsigned NOT NULL DEFAULT 0,
+    `active` tinyint(1) NOT NULL DEFAULT 1,
+    `date_add` datetime NOT NULL,
+    `date_upd` datetime NOT NULL,
+    PRIMARY KEY (`id_aerpoints_rule`),
+    KEY `active_dates` (`active`, `date_from`, `date_to`)
+) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+// Points Rules Conditions Table
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'aerpoints_rules_conditions` (
+    `id_condition` int(11) unsigned NOT NULL AUTO_INCREMENT,
+    `id_aerpoints_rule` int(11) unsigned NOT NULL,
+    `condition_type` varchar(50) NOT NULL,
+    `condition_value` text,
+    `condition_operator` varchar(20) DEFAULT NULL,
+    PRIMARY KEY (`id_condition`),
+    KEY `rule_conditions` (`id_aerpoints_rule`)
+) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+// Points Rules Usage Table
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'aerpoints_rules_usage` (
+    `id_usage` int(11) unsigned NOT NULL AUTO_INCREMENT,
+    `id_aerpoints_rule` int(11) unsigned NOT NULL,
+    `id_customer` int(11) unsigned NOT NULL,
+    `id_order` int(11) unsigned NOT NULL,
+    `points_awarded` int(11) NOT NULL DEFAULT 0,
+    `date_add` datetime NOT NULL,
+    PRIMARY KEY (`id_usage`),
+    KEY `rule_customer` (`id_aerpoints_rule`, `id_customer`),
+    KEY `customer_usage` (`id_customer`, `id_aerpoints_rule`)
+) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
 foreach ($sql as $query) {
     if (Db::getInstance()->execute($query) == false) {
         return false;

@@ -26,9 +26,9 @@
 {if $calculated_points && $calculated_points > 0}
 <div class="aerpoints-product-info">
     <div class="aerpoints-earn">
-        <i class="icon-trophy"></i>
+        <img src="{$module_dir}views/img/points-icon.svg" alt="points" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 5px;" />
         <span class="aerpoints-text">
-            {l s='Earn' mod='aerpoints'} <strong>{$calculated_points}</strong> {l s='points with this product' mod='aerpoints'}
+            + <strong>{$calculated_points}</strong> {l s='Loyalty Points' mod='aerpoints'}
         </span>
     </div>
 </div>

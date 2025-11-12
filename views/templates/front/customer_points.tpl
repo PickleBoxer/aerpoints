@@ -25,8 +25,10 @@
 </style>
 
 <div class="box">
-    <h1 class="page-heading">{l s='My AerPoints' mod='aerpoints'}</h1>
-
+    <h1 class="page-heading">{l s='My Loyalty Points' mod='aerpoints'}</h1>
+    <p>{l s='Discover the exclusive benefits dedicated to AerWholesale customers.' mod='aerpoints'}</p>
+    <p>{l s='Earn Loyalty Points with every purchase. Reach new levels and convert them into exclusive discounts or rewards!' mod='aerpoints'}</p>
+    <br />
     <div class="row">
         <div class="col-md-6">
             <div class="panel panel-default">
@@ -52,16 +54,39 @@
                     <h3 class="panel-title">{l s='How to Earn Points' mod='aerpoints'}</h3>
                 </div>
                 <div class="panel-body">
-                    <ul>
-                        <li>{l s='Purchase products to earn points' mod='aerpoints'}</li>
-                        <li>{l s='Each product has different point values' mod='aerpoints'}</li>
-                        <li>{l s='Points are awarded after order confirmation' mod='aerpoints'}</li>
-                        <li>{l s='Redeem points to create discount vouchers' mod='aerpoints'} -
-                            <a href="{$link->getPageLink('discount', true)|escape:'html':'UTF-8'}" class="btn-link">
-                                {l s='View your vouchers' mod='aerpoints'}
+                    <table class="table" style="margin-bottom: 20px;">
+                        <tbody>
+                            <tr>
+                                <td style="width: 50px; text-align: center; font-size: 25px; border-top: none; vertical-align: top; padding-top: 10px;">🛒</td>
+                                <td style="border-top: none;">
+                                    <strong style="display: block; margin-bottom: 5px;">{l s='Earn points with every purchase' mod='aerpoints'}</strong>
+                                    <span style="color: #666; font-size: 13px;">{l s='Every participating product automatically awards you points.' mod='aerpoints'}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center; font-size: 25px; vertical-align: top; padding-top: 10px;">⭐</td>
+                                <td>
+                                    <strong style="display: block; margin-bottom: 5px;">{l s='Accumulate points' mod='aerpoints'}</strong>
+                                    <span style="color: #666; font-size: 13px;">{l s='More purchases → more points → more benefits.' mod='aerpoints'}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center; font-size: 25px; vertical-align: top; padding-top: 10px;">🎁</td>
+                                <td>
+                                    <strong style="display: block; margin-bottom: 5px;">{l s='Redeem rewards' mod='aerpoints'}</strong>
+                                    <span style="color: #666; font-size: 13px;">{l s='Transform your points into discount vouchers or exclusive rewards.' mod='aerpoints'}</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-left: 3px solid #17a2b8;">
+                        <p style="margin: 0;">
+                            🔗 {l s='Want to know more?' mod='aerpoints'} {l s='Read the complete Loyalty Program guide' mod='aerpoints'} →
+                            <a href="{$link->getPageLink('index')}" class="btn-link" style="font-weight: bold;">
+                                {l s='Learn more' mod='aerpoints'}
                             </a>
-                        </li>
-                    </ul>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -106,7 +131,7 @@
                                         class="form-control" min="{$min_redemption}" max="{$customer_points}"
                                         value="{$min_redemption}" placeholder="{l s='Points' mod='aerpoints'}">
                                     <span class="input-group-addon">
-                                        <i class="icon-star"></i>
+                                        <img src="{$module_dir}views/img/points-icon.svg" alt="points" style="width: 14px; height: 14px; vertical-align: middle;" />
                                     </span>
                                 </div>
                             </div>

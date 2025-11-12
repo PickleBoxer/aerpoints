@@ -24,7 +24,7 @@
 *}
 
 <div class="panel">
-	<h3><i class="icon icon-trophy"></i> {l s='AerPoints - Loyalty Points System' mod='aerpoints'}</h3>
+	<h3><img src="../modules/aerpoints/views/img/points-icon.svg" alt="points" style="width: 18px; height: 18px; vertical-align: middle; margin-right: 5px;" /> {l s='AerPoints - Loyalty Points System' mod='aerpoints'}</h3>
 	<p>
 		<strong>{l s='Welcome to AerPoints!' mod='aerpoints'}</strong><br />
 		{l s='Configure your product-based loyalty points system to encourage customer engagement.' mod='aerpoints'}<br />
@@ -82,7 +82,7 @@
 				<div class="panel-body">
 					<p>{l s='View and edit all products with points configuration in one place.' mod='aerpoints'}</p>
 					<a href="{$link->getAdminLink('AdminAerpointsProduct')|escape:'html':'UTF-8'}" class="btn btn-success">
-						<i class="icon-star"></i>
+						<img src="../modules/aerpoints/views/img/points-icon.svg" alt="points" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 5px;" />
 						{l s='Manage Product Points' mod='aerpoints'}
 					</a>
 				</div>

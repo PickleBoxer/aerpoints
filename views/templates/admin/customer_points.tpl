@@ -14,7 +14,7 @@
 <div class="col-lg-12">
     <div class="panel" id="aerpoints-customer-panel">
         <div class="panel-heading">
-            <i class="icon-star"></i>
+            <img src="../modules/aerpoints/views/img/points-icon.svg" alt="points" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 5px;" />
             {l s='AerPoints Summary' mod='aerpoints'}
         </div>
         <div class="panel-body">
@@ -27,7 +27,7 @@
                         </div>
                         <div class="panel-body text-center">
                             <h2 class="text-success">
-                                <i class="icon-star"></i>
+                                <img src="../modules/aerpoints/views/img/points-icon.svg" alt="points" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 5px;" />
                                 {$customer_points|intval} {l s='Points' mod='aerpoints'}
                             </h2>
                             <p class="text-muted">

@@ -14,11 +14,11 @@
 
 <div class="panel" id="aerpoints-order-panel">
     <div class="panel-heading">
-        <i class="icon-star"></i>
+        <img src="../modules/aerpoints/views/img/points-icon.svg" alt="points" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 5px;" />
         {l s='AerPoints Information' mod='aerpoints'}
     </div>
     <div class="panel-body">
-        
+
         {if $order_history || $pending_points}
             {if $order_history}
             <h4>{l s='Points Transactions for this Order' mod='aerpoints'}</h4>

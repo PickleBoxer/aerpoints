@@ -50,15 +50,15 @@ class AerpointsCustomerpointsModuleFrontController extends ModuleFrontController
         include_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsPending.php');
 
         $customer_id = $this->context->customer->id;
-        
+
         // Get customer points
         $customer_points = AerpointsCustomer::getPointBalance($customer_id);
-        
+
         // Get points history with pagination
         $page = (int) Tools::getValue('page', 1);
         $limit = 10;
         $points_history = AerpointsHistory::getCustomerHistory($customer_id, $limit * 5); // Get more entries to handle pagination
-        
+
         // Simple pagination - slice the results
         $offset = ($page - 1) * $limit;
         $total_history = count($points_history);
@@ -83,6 +83,7 @@ class AerpointsCustomerpointsModuleFrontController extends ModuleFrontController
             'current_page' => $page,
             'total_pages' => $total_pages,
             'has_pagination' => ($total_pages > 1),
+            'module_dir' => $this->module->getPathUri(),
         ));
 
         $this->setTemplate('customer_points.tpl');
@@ -94,7 +95,7 @@ class AerpointsCustomerpointsModuleFrontController extends ModuleFrontController
     private function processAjaxRequest()
     {
         $action = Tools::getValue('action');
-        
+
         if ($action === 'applyPoints') {
             $this->processApplyPoints();
         } else {
@@ -153,7 +154,7 @@ class AerpointsCustomerpointsModuleFrontController extends ModuleFrontController
 
         // Return success with redemption details
         die(Tools::jsonEncode(array(
-            'status' => 'success', 
+            'status' => 'success',
             'message' => sprintf(
                 $this->module->l('Voucher created! You redeemed %d points for a %s discount. Use code: %s on your next order.'),
                 $points_to_redeem,
@@ -191,12 +192,12 @@ class AerpointsCustomerpointsModuleFrontController extends ModuleFrontController
     public function getBreadcrumbLinks()
     {
         $breadcrumb = parent::getBreadcrumbLinks();
-        
+
         $breadcrumb['links'][] = array(
             'title' => $this->module->l('My account'),
             'url' => $this->context->link->getPageLink('my-account')
         );
-        
+
         $breadcrumb['links'][] = array(
             'title' => $this->module->l('My Points'),
             'url' => $this->context->link->getModuleLink('aerpoints', 'customerpoints')

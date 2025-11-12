@@ -25,3 +25,11 @@
 * Don't forget to prefix your containers with your own identifier
 * to avoid any conflicts with others containers.
 */
+
+/* Points icon styling for admin */
+.aerpoints-icon,
+img[alt="points"] {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 2px;
+}

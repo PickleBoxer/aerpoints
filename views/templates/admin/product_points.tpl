@@ -14,7 +14,7 @@
 
 <div class="panel" id="aerpoints-product-panel">
     <div class="panel-heading">
-        <i class="icon-star"></i>
+        <img src="../modules/aerpoints/views/img/points-icon.svg" alt="points" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 5px;" />
         {l s='AerPoints Configuration' mod='aerpoints'}
     </div>
     <div class="panel-body">

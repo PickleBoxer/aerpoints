@@ -37,7 +37,7 @@ class Aerpoints extends Module
     {
         $this->name = 'aerpoints';
         $this->tab = 'pricing_promotion';
-        $this->version = '1.1.0';
+        $this->version = '1.2.1';
         $this->author = 'AerDigital';
         $this->need_instance = 0;
 
@@ -80,6 +80,9 @@ class Aerpoints extends Module
             $this->registerHook('displayAdminOrder') &&
             $this->registerHook('displayAdminCustomers') &&
             $this->registerHook('actionAdminProductsListingFieldsModifier') &&
+            $this->registerHook('displayShoppingCart') &&
+            $this->registerHook('displayOrderDetail') &&
+            $this->registerHook('displayProductListReviews') &&
             $this->installTab();
     }
 
@@ -344,8 +347,11 @@ class Aerpoints extends Module
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsCustomer.php');
         require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsHistory.php');
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsRule.php');
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsRuleCondition.php');
 
         $cart = $params['cart'];
+        $customer = new Customer($customer_id);
 
         $total_points_to_earn = 0;
 
@@ -365,6 +371,35 @@ class Aerpoints extends Module
                 $total_points_to_earn += $points;
             }
         }
+
+        // Apply Points Rules
+        $rules = AerpointsRule::getActiveRules();
+        $bonus_points = 0;
+        $multiplier = 1.0;
+
+        foreach ($rules as $rule) {
+            if ($rule->isValid($cart, $customer)) {
+                // Get quantity multiplier for product-based rules
+                $qty_multiplier = $rule->getQuantityMultiplier($cart);
+
+                if ($rule->action_type === 'bonus') {
+                    $rule_bonus = (int)$rule->action_value * $qty_multiplier;
+                    $bonus_points += $rule_bonus;
+                    // Record usage
+                    $rule->recordUsage($customer_id, $order->id, $rule_bonus);
+                } elseif ($rule->action_type === 'multiplier') {
+                    // Use highest multiplier
+                    if ((float)$rule->action_value > $multiplier) {
+                        $multiplier = (float)$rule->action_value;
+                    }
+                    // Record usage (0 points as it's a multiplier)
+                    $rule->recordUsage($customer_id, $order->id, 0);
+                }
+            }
+        }
+
+        // Calculate final points: (base × multiplier) + bonus
+        $total_points_to_earn = (int)(($total_points_to_earn * $multiplier) + $bonus_points);
 
         // Create pending points entry for earned points only
         if ($total_points_to_earn > 0) {
@@ -492,6 +527,7 @@ class Aerpoints extends Module
             'product_points' => $product_points,
             'calculated_points' => $calculated_points,
             'point_value' => Configuration::get('AERPOINTS_POINT_VALUE', 100),
+            'module_dir' => $this->_path,
         ));
 
         return $this->display(__FILE__, 'views/templates/hook/product_points.tpl');
@@ -547,9 +583,182 @@ class Aerpoints extends Module
             'redeemed_discount' => Tools::displayPrice($redeemed_discount),
             'point_value' => $point_value,
             'min_redemption' => $min_redemption,
+            'module_dir' => $this->_path,
         ));
 
         return $this->display(__FILE__, 'views/templates/hook/cart_redemption.tpl');
+    }
+
+    /**
+     * Hook: displayProductListReviews
+     * Show points badge in product lists
+     */
+    public function hookDisplayProductListReviews($params)
+    {
+        if (!Configuration::get('AERPOINTS_ENABLED')) {
+            return;
+        }
+
+        if (!$this->isCustomerAllowed()) {
+            return;
+        }
+
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
+
+        $product = isset($params['product']) ? $params['product'] : null;
+        if (!$product || !isset($product['id_product'])) {
+            return;
+        }
+
+        $product_points = AerpointsProduct::getProductPoints($product['id_product']);
+        if (!$product_points || (isset($product_points['active']) && $product_points['active'] == 0)) {
+            return;
+        }
+
+        $price_tax_excl = isset($product['price_tax_exc']) ? $product['price_tax_exc'] : $product['price'];
+        $calculated_points = AerpointsProduct::calculateProductPoints($product['id_product'], $price_tax_excl, 1);
+
+        if ($calculated_points <= 0) {
+            return;
+        }
+
+        $this->context->smarty->assign(array(
+            'points' => $calculated_points,
+            'module_dir' => $this->_path,
+        ));
+
+        return $this->display(__FILE__, 'views/templates/hook/product_list_points.tpl');
+    }
+
+    /**
+     * Hook: displayShoppingCart
+     * Display points preview in cart summary
+     */
+    public function hookDisplayShoppingCart($params)
+    {
+        if (!Configuration::get('AERPOINTS_ENABLED')) {
+            return;
+        }
+
+        if (!$this->context->customer->isLogged()) {
+            return;
+        }
+
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsRule.php');
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsRuleCondition.php');
+
+        $cart = $this->context->cart;
+        $customer = $this->context->customer;
+
+        // Calculate base product points
+        $base_points = 0;
+        foreach ($cart->getProducts() as $product) {
+            $product_points = AerpointsProduct::getProductPoints($product['id_product']);
+            if ($product_points && isset($product_points['active']) && $product_points['active'] == 1) {
+                $price_tax_excl = Product::getPriceStatic($product['id_product'], false);
+                $points = AerpointsProduct::calculateProductPoints(
+                    $product['id_product'],
+                    $price_tax_excl,
+                    $product['quantity']
+                );
+                $base_points += $points;
+            }
+        }
+
+        // Get applicable rules
+        $rules = AerpointsRule::getActiveRules();
+        $applicable_rules = array();
+        $bonus_points = 0;
+        $multiplier = 1.0;
+
+        foreach ($rules as $rule) {
+            if ($rule->isValid($cart, $customer)) {
+                // Get quantity multiplier for product-based rules
+                $qty_multiplier = $rule->getQuantityMultiplier($cart);
+
+                if ($rule->action_type === 'bonus') {
+                    $rule_bonus = (int)$rule->action_value * $qty_multiplier;
+                    $bonus_points += $rule_bonus;
+                    $applicable_rules[] = array(
+                        'name' => $rule->name,
+                        'type' => 'bonus',
+                        'value' => $rule_bonus,
+                        'base_value' => (int)$rule->action_value,
+                        'quantity' => $qty_multiplier
+                    );
+                } elseif ($rule->action_type === 'multiplier') {
+                    $multiplier *= (float)$rule->action_value;
+                    $applicable_rules[] = array(
+                        'name' => $rule->name,
+                        'type' => 'multiplier',
+                        'value' => (float)$rule->action_value
+                    );
+                }
+            }
+        }
+
+        $total_points = (int)(($base_points * $multiplier) + $bonus_points);
+
+        if ($total_points > 0) {
+            $this->context->smarty->assign(array(
+                'total_points' => $total_points,
+                'base_points' => $base_points,
+                'bonus_points' => $bonus_points,
+                'multiplier' => $multiplier,
+                'applicable_rules' => $applicable_rules,
+                'module_dir' => $this->_path,
+            ));
+
+            return $this->display(__FILE__, 'views/templates/hook/cart_points_preview.tpl');
+        }
+
+        return;
+    }
+
+    /**
+     * Hook: displayOrderDetail
+     * Display points earned on order confirmation/detail page
+     */
+    public function hookDisplayOrderDetail($params)
+    {
+        if (!Configuration::get('AERPOINTS_ENABLED')) {
+            return;
+        }
+
+        if (!$this->context->customer->isLogged()) {
+            return;
+        }
+
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsProduct.php');
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsRule.php');
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsRuleCondition.php');
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsPending.php');
+
+        $order = $params['order'];
+        $customer = $this->context->customer;
+
+        // Check if this order has pending points
+        $pending = AerpointsPending::getOrderPending($order->id);
+
+        if (!$pending) {
+            return;
+        }
+
+        $points_to_earn = (int)$pending['points_to_earn'];
+
+        if ($points_to_earn > 0) {
+            $this->context->smarty->assign(array(
+                'total_points' => $points_to_earn,
+                'order_id' => $order->id,
+                'points_status' => $pending['status'],
+                'module_dir' => $this->_path,
+            ));
+
+            return $this->display(__FILE__, 'views/templates/hook/order_points_earned.tpl');
+        }
+
+        return;
     }
 
     /**
@@ -565,6 +774,10 @@ class Aerpoints extends Module
         if (! $this->isCustomerAllowed()) {
             return;
         }
+
+        $this->context->smarty->assign(array(
+            'module_dir' => $this->_path,
+        ));
 
         return $this->display(__FILE__, 'views/templates/hook/customer_account.tpl');
     }
@@ -648,7 +861,7 @@ class Aerpoints extends Module
 
         // Add the field to the fields list for display
         $params['fields']['points_earned'] = array(
-            'title' => $this->l('Points Earned').' 🏆',
+            'title' => $this->l('Points Earned').' <img src="'.$this->_path.'views/img/points-icon.svg" alt="points" style="width: 14px; height: 14px; vertical-align: middle;" />',
             'align' => 'text-center',
             'class' => 'fixed-width-xs',
             'callback' => 'formatPointsEarned',
@@ -670,8 +883,10 @@ class Aerpoints extends Module
             return '<span style="color: #aaa;">Disabled</span>';
         }
 
+        $icon = '<img src="'.$this->_path.'views/img/points-icon.svg" alt="points" style="width: 14px; height: 14px; vertical-align: middle;" />';
+
         if ($points > 0) {
-            return $points.' ★ <small>(fixed)</small>';
+            return $points.' '.$icon.' <small>(fixed)</small>';
         } elseif ($ratio > 0) {
             return $ratio.'× <small>(ratio)</small>';
         }
@@ -746,6 +961,7 @@ class Aerpoints extends Module
      */
     private function installTab()
     {
+        // Create main Product Points tab
         $tab = new Tab();
         $tab->active = 1;
         $tab->class_name = 'AdminAerpointsProduct';
@@ -755,7 +971,21 @@ class Aerpoints extends Module
         }
         $tab->id_parent = (int) Tab::getIdFromClassName('AdminCatalog');
         $tab->module = $this->name;
-        return $tab->add();
+        $result = $tab->add();
+
+        // Create Points Rules tab
+        $tab_rules = new Tab();
+        $tab_rules->active = 1;
+        $tab_rules->class_name = 'AdminAerpointsRules';
+        $tab_rules->name = array();
+        foreach (Language::getLanguages(true) as $lang) {
+            $tab_rules->name[$lang['id_lang']] = 'Points Rules';
+        }
+        $tab_rules->id_parent = (int) Tab::getIdFromClassName('AdminCatalog');
+        $tab_rules->module = $this->name;
+        $result = $result && $tab_rules->add();
+
+        return $result;
     }
 
     /**
@@ -763,12 +993,23 @@ class Aerpoints extends Module
      */
     private function uninstallTab()
     {
+        $result = true;
+
+        // Remove Product Points tab
         $id_tab = (int) Tab::getIdFromClassName('AdminAerpointsProduct');
         if ($id_tab) {
             $tab = new Tab($id_tab);
-            return $tab->delete();
+            $result = $result && $tab->delete();
         }
-        return true;
+
+        // Remove Points Rules tab
+        $id_tab_rules = (int) Tab::getIdFromClassName('AdminAerpointsRules');
+        if ($id_tab_rules) {
+            $tab_rules = new Tab($id_tab_rules);
+            $result = $result && $tab_rules->delete();
+        }
+
+        return $result;
     }
 
     public function ajaxProcessAdjustPoints()

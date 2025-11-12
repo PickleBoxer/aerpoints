@@ -65,3 +65,11 @@
     color: #666;
     font-size: 11px;
 }
+
+/* Points icon styling */
+.aerpoints-icon,
+img[alt="points"] {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 2px;
+}

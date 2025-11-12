@@ -1,6 +1,6 @@
 <div class="panel" id="aerpoints-explanation-panel">
     <div class="panel-heading">
-        <i class="icon-star"></i>
+        <img src="../modules/aerpoints/views/img/points-icon.svg" alt="points" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 5px;" />
         {l s='Product Points Configuration' mod='aerpoints'}
     </div>
     <div class="panel-body">
@@ -322,8 +322,10 @@ $(document).ready(function() {
             return;
         }
 
+        var pointsIcon = '<img src="{$module_dir}views/img/points-icon.svg" alt="points" style="width: 14px; height: 14px; vertical-align: middle;" />';
+
         if (pointsEarn > 0) {
-            $('#bulk-preview-text').html('{l s='Mode: Fixed Points' mod='aerpoints'} - <strong>' + pointsEarn + ' ★</strong>');
+            $('#bulk-preview-text').html('{l s='Mode: Fixed Points' mod='aerpoints'} - <strong>' + pointsEarn + ' ' + pointsIcon + '</strong>');
             $('#bulk-preview').show();
         } else if (pointsRatio > 0) {
             $('#bulk-preview-text').html('{l s='Mode: Ratio-based' mod='aerpoints'} - <strong>' + pointsRatio.toFixed(2) + '×</strong> {l s='(calculated from product price)' mod='aerpoints'}');

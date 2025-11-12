@@ -24,8 +24,14 @@
 *}
 
 <li>
-    <a href="{$link->getModuleLink('aerpoints', 'customerpoints')|escape:'html':'UTF-8'}" title="{l s='My Points' mod='aerpoints'}">
-        <i class="icon-trophy"></i>
-        <span>{l s='My Points' mod='aerpoints'}</span>
-    </a>
+  <a href="{$link->getModuleLink('aerpoints', 'customerpoints')|escape:'html':'UTF-8'}"
+    title="{l s='My Loyalty Points' mod='aerpoints'}">
+    <img src="{$module_dir}views/img/points-icon.svg" alt="points" style="width: 49px;
+    height: 43px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 8px 0 0 0;" />
+    <span>{l s='My Loyalty Points' mod='aerpoints'}</span>
+  </a>
 </li>

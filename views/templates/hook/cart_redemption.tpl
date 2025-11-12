@@ -51,7 +51,7 @@
                                         class="form-control" min="{$min_redemption}" max="{$customer_points}"
                                         value="{$min_redemption}" placeholder="{l s='Points' mod='aerpoints'}">
                                     <span class="input-group-addon">
-                                        <i class="icon-star"></i>
+                                        <img src="{$module_dir}views/img/points-icon.svg" alt="points" style="width: 14px; height: 14px; vertical-align: middle;" />
                                     </span>
                                 </div>
                             </div>
