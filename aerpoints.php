@@ -313,14 +313,25 @@ class Aerpoints extends Module
      */
     public function hookHeader()
     {
+        if (! Configuration::get('AERPOINTS_ENABLED')) {
+            return;
+        }
+
+        if (! $this->isCustomerAllowed()) {
+            return;
+        }
+
         $this->context->controller->addJS($this->_path.'/views/js/front.js');
         $this->context->controller->addCSS($this->_path.'/views/css/front.css');
+
+        // Add user points to JavaScript
+        if ($this->context->customer->isLogged()) {
+            require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsCustomer.php');
+            $customer_points = AerpointsCustomer::getPointBalance($this->context->customer->id);
+            Media::addJsDef(array('aerpoints_user_points' => (int)$customer_points));
+        }
     }
 
-    /**
-     * Hook: actionValidateOrder
-     * Called when order is validated - create pending points entry
-     */
     /**
      * Hook: actionValidateOrder
      * Called when order is validated - create pending points entry
@@ -361,7 +372,9 @@ class Aerpoints extends Module
             // Only count points if product is active
             if ($product_points && isset($product_points['active']) && $product_points['active'] == 1) {
                 // Get tax-excluded price
-                $price_tax_excl = Product::getPriceStatic($product['id_product'], false);
+                $null = null;
+                $price_tax_excl = Product::getPriceStatic($product['id_product'], false, null, 6, null, false, true, 1, false, null, null, null, $null, true, true, null, true, false);
+                //$price_tax_excl = Product::getPriceStatic($product['id_product'], false);
                 // Use new calculation method (supports both fixed and ratio)
                 $points = AerpointsProduct::calculateProductPoints(
                     $product['id_product'],
@@ -516,7 +529,9 @@ class Aerpoints extends Module
         }
 
         // Calculate actual points customer will earn
-        $price_tax_excl = Product::getPriceStatic($product->id, false);
+        $null = null;
+        $price_tax_excl = Product::getPriceStatic($product->id, false, null, 6, null, false, true, 1, false, null, null, null, $null, true, true, null, true, false);
+        //$price_tax_excl = Product::getPriceStatic($product->id, false);
         $calculated_points = AerpointsProduct::calculateProductPoints($product->id, $price_tax_excl, 1);
 
         if ($calculated_points <= 0) {
@@ -615,7 +630,9 @@ class Aerpoints extends Module
             return;
         }
 
-        $price_tax_excl = isset($product['price_tax_exc']) ? $product['price_tax_exc'] : $product['price'];
+        $null = null;
+        $price_tax_excl = Product::getPriceStatic($product['id_product'], false, null, 6, null, false, true, 1, false, null, null, null, $null, true, true, null, true, false);
+        //$price_tax_excl = isset($product['price_tax_exc']) ? $product['price_tax_exc'] : $product['price'];
         $calculated_points = AerpointsProduct::calculateProductPoints($product['id_product'], $price_tax_excl, 1);
 
         if ($calculated_points <= 0) {
@@ -656,7 +673,9 @@ class Aerpoints extends Module
         foreach ($cart->getProducts() as $product) {
             $product_points = AerpointsProduct::getProductPoints($product['id_product']);
             if ($product_points && isset($product_points['active']) && $product_points['active'] == 1) {
-                $price_tax_excl = Product::getPriceStatic($product['id_product'], false);
+                $null = null;
+                $price_tax_excl = Product::getPriceStatic($product['id_product'], false, null, 6, null, false, true, 1, false, null, null, null, $null, true, true, null, true, false);
+                //$price_tax_excl = Product::getPriceStatic($product['id_product'], false);
                 $points = AerpointsProduct::calculateProductPoints(
                     $product['id_product'],
                     $price_tax_excl,
@@ -981,7 +1000,7 @@ class Aerpoints extends Module
         foreach (Language::getLanguages(true) as $lang) {
             $tab_rules->name[$lang['id_lang']] = 'Points Rules';
         }
-        $tab_rules->id_parent = (int) Tab::getIdFromClassName('AdminCatalog');
+        $tab_rules->id_parent = (int) Tab::getIdFromClassName('AdminPriceRule');
         $tab_rules->module = $this->name;
         $result = $result && $tab_rules->add();
 

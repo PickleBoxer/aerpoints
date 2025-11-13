@@ -14,7 +14,7 @@
     <tbody id="aerpoints-cart-tbody">
         {* Base product points row *}
         {if $base_points > 0}
-            <tr class="cart_discount aerpoints-row">
+            <tr class="cart_discount aerpoints-row hidden">
                 <td class="cart_discount_name" colspan="3" style="padding: 8px; color: #666;">
                     {l s='Product Points' mod='aerpoints'}
                 </td>
@@ -63,7 +63,7 @@
     {* Total row - separate for tfoot placement *}
     <tfoot id="aerpoints-cart-tfoot">
         <tr class="cart_total_points aerpoints-total-row">
-            <td colspan="5" class="text-right" style="padding: 8px; font-weight: bold; color: #0f7fe3;">
+            <td colspan="3" class="text-right" style="padding: 8px; font-weight: bold; color: #0f7fe3;">
                 {l s='Total Loyalty Points You\'ll Earn' mod='aerpoints'}
             </td>
             <td colspan="2" class="price" style="padding: 8px; text-align: right; font-weight: bold; color: #0f7fe3; font-size: 16px;">

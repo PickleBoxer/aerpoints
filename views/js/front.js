@@ -34,6 +34,12 @@ $(document).ready(function() {
     $(document).ajaxComplete(function() {
         moveAerpointsPreviewToCart();
     });
+
+    // Display user points in header
+    displayUserPointsInHeader();
+
+    // Add points icon to specific category links
+    addPointsIconToCategories();
 });
 
 function moveAerpointsPreviewToCart() {
@@ -44,8 +50,8 @@ function moveAerpointsPreviewToCart() {
         return;
     }
 
-    // Remove existing aerpoints rows to avoid duplicates
-    //$('.aerpoints-row, .cart_total_points').remove();
+    // Remove existing aerpoints rows from the CART TABLE to avoid duplicates
+    $cartTable.find('.aerpoints-row, .cart_total_points').remove();
 
     // Clone the tbody (detail rows) and insert it into the cart table tbody
     var $tbody = $aerpointsTable.find('tbody').clone().show();
@@ -72,4 +78,39 @@ function moveAerpointsPreviewToCart() {
 
     // Remove existing aerpoints rows to avoid duplicates
     //$('.aerpoints-row, .cart_total_points').remove();
+}
+
+function displayUserPointsInHeader() {
+    if (typeof aerpoints_user_points === 'undefined') {
+        return;
+    }
+
+    var $headerUserInfo = $('.header_user_info.hidden-xs');
+    if (!$headerUserInfo.length || $headerUserInfo.find('.aerpoints-balance').length) {
+        return;
+    }
+
+    var pointsHtml = '<span class="aerpoints-balance" style="margin-left: 10px;">' +
+        '<strong>' + aerpoints_user_points + '</strong>' +
+        '<img src="/modules/aerpoints/views/img/points-icon.svg" alt="points" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 3px; filter: brightness(0) invert(1);" />' +
+        '</span>';
+
+    $headerUserInfo.find('.account').append(pointsHtml);
+}
+
+function addPointsIconToCategories() {
+    var categoryIds = [69, 387, 468, 1595, 1175, 73, 817, 458, 1680, 614, 74, 1487, 1462];
+    var iconHtml = ' <img src="/modules/aerpoints/views/img/points-icon.svg" alt="points" style="width: 14px; height: 14px; vertical-align: middle; margin-left: 3px;" />';
+
+    $('#56-innertab-54 a').each(function() {
+        var href = $(this).attr('href');
+        if (href) {
+            for (var i = 0; i < categoryIds.length; i++) {
+                if (href.indexOf('/' + categoryIds[i] + '-') !== -1 && !$(this).find('img').length) {
+                    $(this).append(iconHtml);
+                    break;
+                }
+            }
+        }
+    });
 }

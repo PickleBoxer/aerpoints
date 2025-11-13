@@ -82,7 +82,7 @@
                     <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-left: 3px solid #17a2b8;">
                         <p style="margin: 0;">
                             🔗 {l s='Want to know more?' mod='aerpoints'} {l s='Read the complete Loyalty Program guide' mod='aerpoints'} →
-                            <a href="{$link->getPageLink('index')}" class="btn-link" style="font-weight: bold;">
+                            <a href="{$link->getModuleLink('aerpoints', 'promo')}" class="btn-link" style="font-weight: bold;">
                                 {l s='Learn more' mod='aerpoints'}
                             </a>
                         </p>

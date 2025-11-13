@@ -35,6 +35,17 @@
                         {/if}
                     </select>
                 </div>
+                <div class="col-md-3">
+                    <label for="supplier_filter">{l s='Filter by Supplier' mod='aerpoints'}</label>
+                    <select id="supplier_filter" class="form-control">
+                        <option value="">{l s='All Suppliers' mod='aerpoints'}</option>
+                        {if isset($suppliers)}
+                            {foreach from=$suppliers item=supplier}
+                                <option value="{$supplier.id_supplier}">{$supplier.name}</option>
+                            {/foreach}
+                        {/if}
+                    </select>
+                </div>
                 <div class="col-md-4">
                     <label for="search_filter">{l s='Search by Name/Reference' mod='aerpoints'}</label>
                     <input type="text" id="search_filter" class="form-control" placeholder="{l s='Enter product name or reference...' mod='aerpoints'}">
@@ -120,6 +131,7 @@ $(document).ready(function() {
     function loadProducts() {
         var category_id = $('#category_filter').val();
         var manufacturer_id = $('#manufacturer_filter').val();
+        var supplier_id = $('#supplier_filter').val();
         var search = $('#search_filter').val();
 
         // Show loading state
@@ -133,6 +145,7 @@ $(document).ready(function() {
             data: {
                 category_id: category_id,
                 manufacturer_id: manufacturer_id,
+                supplier_id: supplier_id,
                 search: search,
                 limit: 100
             },
@@ -246,8 +259,8 @@ $(document).ready(function() {
         }
     });
 
-    // Auto-load products when category or manufacturer changes
-    $('#category_filter, #manufacturer_filter').change(function() {
+    // Auto-load products when category, manufacturer or supplier changes
+    $('#category_filter, #manufacturer_filter, #supplier_filter').change(function() {
         loadProducts();
     });
 
@@ -300,9 +313,9 @@ $(document).ready(function() {
         var pointsRatio = parseFloat($('#points_ratio').val()) || 0;
 
         if (pointsEarn === 0 && pointsRatio === 0) {
-            e.preventDefault();
-            alert('{l s='Please enter either Fixed Points or Points Ratio (at least one must be greater than 0).' mod='aerpoints'}');
-            return false;
+            //e.preventDefault();
+            //alert('{l s='Please enter either Fixed Points or Points Ratio (at least one must be greater than 0).' mod='aerpoints'}');
+            //return false;
         }
 
         if (pointsRatio > 100) {

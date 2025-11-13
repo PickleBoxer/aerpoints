@@ -39,8 +39,9 @@ class AdminAerpointsProductController extends ModuleAdminController
 
         $this->fields_list = $this->getFieldsList();
 
-        $this->_select = 'pl.name as product_name';
-        $this->_join = 'LEFT JOIN `'._DB_PREFIX_.'product_lang` pl ON (a.`id_product` = pl.`id_product` AND pl.`id_lang` = '.(int) $this->context->language->id.' AND pl.`id_shop` = '.(int)$this->context->shop->id.')';
+        $this->_select = 'pl.name as product_name, p.reference';
+        $this->_join = 'LEFT JOIN `'._DB_PREFIX_.'product_lang` pl ON (a.`id_product` = pl.`id_product` AND pl.`id_lang` = '.(int) $this->context->language->id.' AND pl.`id_shop` = '.(int)$this->context->shop->id.')
+                        LEFT JOIN `'._DB_PREFIX_.'product` p ON (a.`id_product` = p.`id_product`)';
         $this->_where = 'AND (a.points_earn > 0 OR a.points_ratio > 0)';
     }
 
@@ -54,6 +55,12 @@ class AdminAerpointsProductController extends ModuleAdminController
                 'title' => $this->l('Product ID'),
                 'align' => 'center',
                 'class' => 'fixed-width-xs'
+            ),
+            'reference' => array(
+                'title' => $this->l('Reference'),
+                'align' => 'center',
+                'class' => 'fixed-width-sm',
+                'filter_key' => 'p!reference'
             ),
             'product_name' => array(
                 'title' => $this->l('Product Name'),
@@ -117,10 +124,12 @@ class AdminAerpointsProductController extends ModuleAdminController
         // Get categories and manufacturers for filters
         $categories = Category::getCategories($this->context->language->id, true, false);
         $manufacturers = Manufacturer::getManufacturers(false, $this->context->language->id);
+        $suppliers = Supplier::getSuppliers(false, $this->context->language->id);
 
         $this->context->smarty->assign(array(
             'categories' => $categories,
             'manufacturers' => $manufacturers,
+            'suppliers' => $suppliers,
             'current' => self::$currentIndex,
             'token' => $this->token,
             'ajax_url' => self::$currentIndex . '&ajax=1&action=getFilteredProducts&token=' . $this->token
@@ -153,6 +162,7 @@ class AdminAerpointsProductController extends ModuleAdminController
         $search = trim(Tools::getValue('search', ''));
         $category_id = (int)Tools::getValue('category_id', 0);
         $manufacturer_id = (int)Tools::getValue('manufacturer_id', 0);
+        $supplier_id = (int)Tools::getValue('supplier_id', 0);
         $limit = (int)Tools::getValue('limit', 50); // Limit results to 50 by default
 
         $sql = new DbQuery();
@@ -172,6 +182,12 @@ class AdminAerpointsProductController extends ModuleAdminController
         // Add manufacturer filter
         if ($manufacturer_id > 0) {
             $sql->where('p.id_manufacturer = ' . $manufacturer_id);
+        }
+
+        // Add supplier filter
+        if ($supplier_id > 0) {
+            $sql->leftJoin('product_supplier', 'psu', 'p.id_product = psu.id_product');
+            $sql->where('psu.id_supplier = ' . $supplier_id);
         }
 
         // Add search filter

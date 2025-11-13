@@ -11,7 +11,7 @@
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
-<div class="aerpoints-list-badge">
+<div class="aerpoints-list-badge" style="margin-bottom:5px;">
     <img src="{$module_dir}views/img/points-icon.svg" alt="points" width="14" height="14" />
-    <span>+ {$points}</span>
+    <span>+{$points} Pt.</span>
 </div>
