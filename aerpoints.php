@@ -324,12 +324,13 @@ class Aerpoints extends Module
         $this->context->controller->addJS($this->_path.'/views/js/front.js');
         $this->context->controller->addCSS($this->_path.'/views/css/front.css');
 
-        // Add user points to JavaScript
-        if ($this->context->customer->isLogged()) {
-            require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsCustomer.php');
-            $customer_points = AerpointsCustomer::getPointBalance($this->context->customer->id);
-            Media::addJsDef(array('aerpoints_user_points' => (int)$customer_points));
-        }
+        // Add user points and eligibility to JavaScript
+        require_once(_PS_MODULE_DIR_.'aerpoints/classes/AerpointsCustomer.php');
+        $customer_points = AerpointsCustomer::getPointBalance($this->context->customer->id);
+        Media::addJsDef(array(
+            'aerpoints_user_points' => (int)$customer_points,
+            'aerpoints_eligible' => true
+        ));
     }
 
     /**
@@ -639,8 +640,12 @@ class Aerpoints extends Module
             return;
         }
 
+        $manufacturer_name = isset($product['manufacturer_name']) ? $product['manufacturer_name'] : $this->l('this brand');
+
         $this->context->smarty->assign(array(
             'points' => $calculated_points,
+            'manufacturer' => $manufacturer_name,
+            'product' => $product,
             'module_dir' => $this->_path,
         ));
 

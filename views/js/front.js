@@ -40,6 +40,9 @@ $(document).ready(function() {
 
     // Add points icon to specific category links
     addPointsIconToCategories();
+
+    // Handle cart notification for points
+    initAerpointsCartNotification();
 });
 
 function moveAerpointsPreviewToCart() {
@@ -111,6 +114,100 @@ function addPointsIconToCategories() {
                     break;
                 }
             }
+        }
+    });
+}
+
+function initAerpointsCartNotification() {
+    var pendingProducts = {};
+    
+    console.log('AerPoints cart notification initialized');
+    
+    // Store product ID when add to cart button is clicked
+    $(document).on('click', '.ajax_add_to_cart_button, #buttoncat, button[name="Submit"]', function(e) {
+        var $button = $(this);
+        var productId = $button.data('id-product') || $button.attr('data-id-product');
+        
+        console.log('Button clicked, product ID:', productId);
+        
+        if (productId) {
+            // Mark product as pending, quantity will come from AJAX data
+            pendingProducts[productId] = true;
+            console.log('Pending products:', pendingProducts);
+        }
+    });
+
+    // When AJAX completes after button click, show notification
+    $(document).ajaxComplete(function(event, xhr, settings) {
+        console.log('AJAX completed, pending products:', pendingProducts);
+        console.log('AJAX URL:', settings.url);
+        console.log('AJAX data:', settings.data);
+        
+        if (Object.keys(pendingProducts).length === 0) return;
+        
+        try {
+            var response = JSON.parse(xhr.responseText);
+            console.log('Response parsed:', response);
+            console.log('hasError:', response.hasError);
+            
+            if (response.hasError === false && settings.data) {
+                // Extract product ID and quantity from AJAX data
+                var dataParams = settings.data.split('&');
+                var productId = null;
+                var quantity = 1;
+                
+                for (var i = 0; i < dataParams.length; i++) {
+                    var param = dataParams[i].split('=');
+                    if (param[0] === 'id_product') {
+                        productId = param[1];
+                    } else if (param[0] === 'qty') {
+                        quantity = parseInt(param[1]) || 1;
+                    }
+                }
+                
+                console.log('Extracted from AJAX - product ID:', productId, 'quantity:', quantity);
+                
+                // Check if this product is in our pending list
+                if (productId && pendingProducts[productId]) {
+                    console.log('Getting notification for product:', productId, 'quantity:', quantity);
+                    
+                    var $template = $('.aerpoints-cart-notification-template[data-product-id="' + productId + '"]').first();
+                    console.log('Template found:', $template.length);
+                    
+                    if ($template.length) {
+                        var $notification = $template.find('.aerpoints-notification-content').clone();
+                        console.log('Notification cloned:', $notification);
+                        
+                        // Update points if quantity > 1
+                        if (quantity > 1) {
+                            console.log('Updating points for quantity:', quantity);
+                            $notification.find('strong, span').each(function() {
+                                var text = $(this).text();
+                                var pointsMatch = text.match(/(\d+)\s+loyalty points/i);
+                                if (pointsMatch) {
+                                    var points = parseInt(pointsMatch[1]);
+                                    var totalPoints = points * quantity;
+                                    console.log('Points updated:', points, 'x', quantity, '=', totalPoints);
+                                    $(this).text($(this).text().replace(pointsMatch[0], totalPoints + ' loyalty points'));
+                                }
+                            });
+                        }
+                        
+                        $('#aerpoints_cart_notification').html($notification).hide().fadeIn('slow');
+                        console.log('Notification displayed');
+                    } else {
+                        // No template found, clean up any old notification
+                        $('#aerpoints_cart_notification').empty();
+                        console.log('No template found, notification area cleared');
+                    }
+                    
+                    // Remove this product from pending
+                    delete pendingProducts[productId];
+                    console.log('Product removed from pending, remaining:', pendingProducts);
+                }
+            }
+        } catch(e) {
+            console.error('Error processing notification:', e);
         }
     });
 }
