@@ -36,6 +36,7 @@ class AerpointsHistory extends ObjectModel
     const TYPE_MANUAL_ADD = 'manual_add';
     const TYPE_MANUAL_REMOVE = 'manual_remove';
     const TYPE_REFUND = 'refund';
+    const TYPE_GIFT_REDEEMED = 'gift_redeemed';
 
     public $id_aerpoints_history;
     public $id_customer;
@@ -73,7 +74,8 @@ class AerpointsHistory extends ObjectModel
             self::TYPE_REDEEMED,
             self::TYPE_MANUAL_ADD,
             self::TYPE_MANUAL_REMOVE,
-            self::TYPE_REFUND
+            self::TYPE_REFUND,
+            self::TYPE_GIFT_REDEEMED
         );
     }
 
@@ -95,7 +97,8 @@ class AerpointsHistory extends ObjectModel
             self::TYPE_REDEEMED => 'Points Redeemed',
             self::TYPE_MANUAL_ADD => 'Manual Addition',
             self::TYPE_MANUAL_REMOVE => 'Manual Removal',
-            self::TYPE_REFUND => 'Refund'
+            self::TYPE_REFUND => 'Refund',
+            self::TYPE_GIFT_REDEEMED => 'Gift Redeemed'
         );
     }
 

@@ -37,7 +37,7 @@ class Aerpoints extends Module
     {
         $this->name = 'aerpoints';
         $this->tab = 'pricing_promotion';
-        $this->version = '1.2.1';
+        $this->version = '1.3.0';
         $this->author = 'AerDigital';
         $this->need_instance = 0;
 
@@ -1009,6 +1009,30 @@ class Aerpoints extends Module
         $tab_rules->module = $this->name;
         $result = $result && $tab_rules->add();
 
+        // Create Gift Catalog tab
+        $tab_gifts = new Tab();
+        $tab_gifts->active = 1;
+        $tab_gifts->class_name = 'AdminAerpointsGifts';
+        $tab_gifts->name = array();
+        foreach (Language::getLanguages(true) as $lang) {
+            $tab_gifts->name[$lang['id_lang']] = 'AerPoints Gifts';
+        }
+        $tab_gifts->id_parent = (int) Tab::getIdFromClassName('AdminCatalog');
+        $tab_gifts->module = $this->name;
+        $result = $result && $tab_gifts->add();
+
+        // Create Gift Orders tab
+        $tab_gift_orders = new Tab();
+        $tab_gift_orders->active = 1;
+        $tab_gift_orders->class_name = 'AdminAerpointsGiftOrders';
+        $tab_gift_orders->name = array();
+        foreach (Language::getLanguages(true) as $lang) {
+            $tab_gift_orders->name[$lang['id_lang']] = 'AerPoints Gift Orders';
+        }
+        $tab_gift_orders->id_parent = (int) Tab::getIdFromClassName('AdminParentOrders');
+        $tab_gift_orders->module = $this->name;
+        $result = $result && $tab_gift_orders->add();
+
         return $result;
     }
 
@@ -1031,6 +1055,20 @@ class Aerpoints extends Module
         if ($id_tab_rules) {
             $tab_rules = new Tab($id_tab_rules);
             $result = $result && $tab_rules->delete();
+        }
+
+        // Remove Gift Catalog tab
+        $id_tab_gifts = (int) Tab::getIdFromClassName('AdminAerpointsGifts');
+        if ($id_tab_gifts) {
+            $tab_gifts = new Tab($id_tab_gifts);
+            $result = $result && $tab_gifts->delete();
+        }
+
+        // Remove Gift Orders tab
+        $id_tab_gift_orders = (int) Tab::getIdFromClassName('AdminAerpointsGiftOrders');
+        if ($id_tab_gift_orders) {
+            $tab_gift_orders = new Tab($id_tab_gift_orders);
+            $result = $result && $tab_gift_orders->delete();
         }
 
         return $result;

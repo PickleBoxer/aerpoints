@@ -35,3 +35,16 @@
     <span>{l s='My Loyalty Points' mod='aerpoints'}</span>
   </a>
 </li>
+
+<li>
+  <a href="{$link->getModuleLink('aerpoints', 'gifts')|escape:'html':'UTF-8'}"
+    title="{l s='Gift Catalog' mod='aerpoints'}">
+    <img src="{$module_dir}views/img/points-icon.svg" alt="gifts" style="width: 49px;
+    height: 43px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 8px 0 0 0;" />
+    <span>{l s='Gift Catalog' mod='aerpoints'}</span>
+  </a>
+</li>

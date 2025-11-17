@@ -26,6 +26,8 @@
 
 $sql = array();
 
+$sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'aerpoints_gift_order`';
+$sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'aerpoints_gift`';
 $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'aerpoints_history`';
 $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'aerpoints_pending`';
 $sql[] = 'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'aerpoints_product`';

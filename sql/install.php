@@ -125,6 +125,40 @@ $sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'aerpoints_rules_usage` 
     KEY `customer_usage` (`id_customer`, `id_aerpoints_rule`)
 ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
+// Gift Catalog Table
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'aerpoints_gift` (
+    `id_aerpoints_gift` int(11) NOT NULL AUTO_INCREMENT,
+    `name` varchar(255) NOT NULL,
+    `description` text,
+    `points_cost` int(11) NOT NULL,
+    `quantity` int(11) NOT NULL DEFAULT 0,
+    `image` varchar(255) DEFAULT NULL,
+    `active` tinyint(1) NOT NULL DEFAULT 1,
+    `position` int(11) NOT NULL DEFAULT 0,
+    `date_add` datetime NOT NULL,
+    `date_upd` datetime NOT NULL,
+    PRIMARY KEY (`id_aerpoints_gift`),
+    KEY `active_position` (`active`, `position`)
+) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
+// Gift Orders Table
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'aerpoints_gift_order` (
+    `id_aerpoints_gift_order` int(11) NOT NULL AUTO_INCREMENT,
+    `id_customer` int(11) NOT NULL,
+    `id_aerpoints_gift` int(11) NOT NULL,
+    `gift_name` varchar(255) NOT NULL,
+    `points_spent` int(11) NOT NULL,
+    `status` varchar(20) NOT NULL DEFAULT \'pending\',
+    `customer_notes` text,
+    `admin_notes` text,
+    `date_add` datetime NOT NULL,
+    `date_upd` datetime NOT NULL,
+    PRIMARY KEY (`id_aerpoints_gift_order`),
+    KEY `customer_idx` (`id_customer`),
+    KEY `status_idx` (`status`),
+    KEY `date_idx` (`date_add`)
+) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+
 foreach ($sql as $query) {
     if (Db::getInstance()->execute($query) == false) {
         return false;
