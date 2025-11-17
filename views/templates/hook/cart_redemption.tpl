@@ -13,9 +13,9 @@
 *}
 
 {if $customer_points > 0}
-    <div id="aerpoints-cart-redemption" class="panel panel-default">
+    <div id="aerpoints-cart-redemption" class="panel panel-default" style="margin-top:20px;">
         <div class="panel-heading">
-            <h4 class="panel-title"><i class="icon-gift"></i> {l s='Redeem Points' mod='aerpoints'}</h4>
+            <h4 class="panel-title"><img src="/modules/aerpoints/views/img/points-icon.svg" alt="points" style="width: 14px; height: 14px; vertical-align: middle;"> {l s='Redeem Points' mod='aerpoints'}</h4>
         </div>
         <div class="panel-body">
             <div class="row">

@@ -73,3 +73,8 @@ img[alt="points"] {
     vertical-align: middle;
     margin: 0 2px;
 }
+
+/* Cart Redemption Panel Adjustments */
+#aerpoints-cart-redemption .panel-heading:after {
+    content: none;
+}
