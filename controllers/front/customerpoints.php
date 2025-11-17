@@ -183,7 +183,7 @@ class AerpointsCustomerpointsModuleFrontController extends ModuleFrontController
         $cart_rule->reduction_tax = 1;
         $cart_rule->reduction_currency = (int) $this->context->currency->id;
         $cart_rule->date_from = date('Y-m-d H:i:s');
-        $cart_rule->date_to = date('Y-m-d H:i:s', strtotime('+1 day'));
+        $cart_rule->date_to = date('Y-m-d H:i:s', strtotime('+7 days'));
         $cart_rule->active = 1;
 
         return $cart_rule->add() ? $cart_rule : false;

@@ -8,7 +8,7 @@
     <div class="aerpoints-gifts-catalog">
         <div class="alert alert-info">
             <strong>{l s='Your Available Points:' mod='aerpoints'}</strong>
-            <span class="badge badge-lg badge-primary">{$available_points} <img src="{$module_dir}views/img/points-icon.svg"
+            <span>{$available_points} <img src="{$module_dir}views/img/points-icon.svg"
                     alt="points" style="width: 14px; height: 14px; vertical-align: middle;" /></span>
         </div>
 
@@ -31,7 +31,8 @@
                                     {$gift.description|strip_tags|truncate:100:'...'|escape:'html'}
                                 </div>
                                 <div class="gift-points">
-                                    <span class="points-badge">{$gift.points_cost} ★</span>
+                                    <span class="points-badge">{$gift.points_cost} <img src="{$module_dir}views/img/points-icon.svg"
+                    alt="points" style="width: 14px; height: 14px; vertical-align: middle;" /></span>
                                 </div>
                                 <div class="gift-actions">
                                     {if $gift.is_available && $available_points >= $gift.points_cost}

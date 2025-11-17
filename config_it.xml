@@ -2,7 +2,7 @@
 <module>
 	<name>aerpoints</name>
 	<displayName><![CDATA[AerPoints]]></displayName>
-	<version><![CDATA[1.2.1]]></version>
+	<version><![CDATA[1.3.0]]></version>
 	<description><![CDATA[Sistema di punti fedelt&agrave; basato sui prodotti per il coinvolgimento della clientela]]></description>
 	<author><![CDATA[AerDigital]]></author>
 	<tab><![CDATA[pricing_promotion]]></tab>
